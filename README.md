@@ -1,4 +1,4 @@
-# Brio Package
+# Brio
 
 A Python package for brio-style railway track design and management with 3D visualization.
 
@@ -47,6 +47,7 @@ brio
 
 - Python 3.7+
 - Panda3D (for 3D graphics and physics)
+- panda3d-simplepbr
 
 ## License
 
