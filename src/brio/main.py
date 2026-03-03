@@ -17,7 +17,7 @@ from panda3d.core import (
 )
 import simplepbr
 
-from brio_pkg.src.brio.logging import LogLevel, configure_logging
+from .logging import LogLevel, configure_logging
 
 from .utils import todecimal, rgba
 from .constants import Colors
