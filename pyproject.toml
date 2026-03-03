@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "brio"
+version = "2026.3.3"
+dependencies = [
+  "panda3d>=1.10.9",
+  "panda3d-simplepbr"
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Jared Casarez", email = "jaredcasarez1@gmail.com"},
+]
+
+description = "A 3D Brio train track building sandbox"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E.*"]
+
+[project.gui-scripts]
+brio = "brio:main"
+
+[project.scripts]
+brio-collision-editor = "brio.tools.collisionedit:main"
