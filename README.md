@@ -2,6 +2,9 @@
 
 A Python package for brio-style railway track design and management with 3D visualization.
 
+![Demo](readme/main_demo_1.png)
+
+
 ## Features
 
 - **Track Management**: Create, edit, and manage railway tracks with various types (straight, curved, elevated, switches, crossings)
