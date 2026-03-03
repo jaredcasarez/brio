@@ -11,7 +11,7 @@
 
 A Python module for brio-style railway track design and management with 3D visualization, built with the <img alt="Panda3D" src="readme/panda3d_logo.png" width="20" height="20"> Panda3D Framework
 
-> Track models supplied by [Michael Fanta on Printables](https://www.printables.com/model/117903-extended-set-of-wooden-train-track-with-50-unique) (under the [Creative Commons Attribution-NonCommercial License](https://creativecommons.org/licenses/by-nc/4.0/))
+> Track models supplied by [Michal Fanta on Printables](https://www.printables.com/model/117903-extended-set-of-wooden-train-track-with-50-unique) (under the [Creative Commons Attribution-NonCommercial License](https://creativecommons.org/licenses/by-nc/4.0/))
 
 ![Demo](readme/main_demo_1.png)
 
