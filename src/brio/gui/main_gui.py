@@ -222,7 +222,7 @@ class GUI:
         # Keyboard hints (right)
         self.hints_label = DirectLabel(
             parent=self.statusbar,
-            text="[Z] Move  [Q/E] Rotate  [Enter] Place",
+            text="[Enter] Place    [Z] Drag    [Q/E] Rotate    [R/F] Raise/Lower    [X] Flip   [Shift] Modifier key    [WASD] Move camera",
             text_font=self.window.font,
             text_scale=0.025,
             text_fg=todecimal(rgba(140, 140, 140, 1)),
