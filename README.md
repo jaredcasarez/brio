@@ -48,7 +48,7 @@ brio/
 
 ```bash
 git clone https://github.com/jaredcasarez/brio
-pip install .
+pip install ./brio
 ```
 
 ## Usage

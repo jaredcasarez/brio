@@ -5,6 +5,7 @@ Provides a centralized logging system with configurable levels and formatters.
 """
 
 import logging
+import logging.handlers
 import sys
 from pathlib import Path
 from typing import Optional
@@ -85,7 +86,7 @@ def configure_logging(
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         
-        file_handler = logging.FileHandler(log_path, mode='a', encoding='utf-8')
+        file_handler = logging.handlers.RotatingFileHandler(log_path, mode='a', encoding='utf-8', maxBytes=10*1024*1024, backupCount=5)
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
