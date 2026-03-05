@@ -19,10 +19,10 @@ class Track:
     ):
         self.connections = {'male': [], 'female': []}
         self.window = window
-        name = track_file.split('/')[-1].split('.')[0]
+        self.name = track_file.split('/')[-1].split('.')[0]
         self.scenenodepath = self.window.loader.loadModel(track_file)
         self.tracknodepath = self.scenenodepath.find("**/+GeomNode")
-        track_tag_name = f"{name}_{len(self.window.table.tracks)}"
+        track_tag_name = f"{self.name}_{len(self.window.table.tracks)}"
         self.tracknodepath.setTag(track_tag, track_tag_name)
         self.track_file = track_file
         self.children = self.scenenodepath.getChildren()
@@ -31,12 +31,16 @@ class Track:
         )
         self.z_offset = self.tracknodepath.getPos().z - self.tracknodepath.getTightBounds()[0].z
         self.nodepath = parent.attachNewNode("pivot")
-        self.tracknodepath.reparentTo(self.nodepath)
+        
         self.tracknodepath.setName(track_tag_name)
         self.tracknodepath.setDepthOffset(1)
-        logger.debug('textstage: %s', self.tracknodepath.findAllTextureStages())
-        logger.debug('texts: %s', self.tracknodepath.findAllTextures())
-        self.tracknodepath.setPos(self.center_offset.x, self.center_offset.y, self.z_offset)
+        tss = self.tracknodepath.findAllTextureStages()
+        for tstage in tss:
+            tstage.setSort(1)
+        ts = self.tracknodepath.findAllTextures()
+        logger.debug('textstage: %s', tss)
+        logger.debug('texts: %s', ts)
+        self.tracknodepath.setMaterial(self.window.myMaterial)
         self.nodepath.setPos(kwargs.get("pos", Vec3(0, 0, 0)))
         self.nodepath.setHpr(kwargs.get("hpr", Vec3(0, 0, 0)))
         self.nodepath.setScale(kwargs.get("scale", Vec3(1, 1, 1)))
@@ -48,14 +52,14 @@ class Track:
             for child in self.children:
                 if "plane" in child.getName().lower():
                     self.planes.append(child)
-                    child.reparentTo(self.tracknodepath)
-                    child.hide()
+                    child.wrtReparentTo(self.tracknodepath)
+                    child.hide() if not self.window.show_collisions else child.show()
                     child.node().setIntoCollideMask(BitMask32.bit(4))
                     child.node().setFromCollideMask(BitMask32.bit(4))
 
                 if "sphere" in child.getName().lower():
-                    child.reparentTo(self.tracknodepath)
-                    child.hide()
+                    child.wrtReparentTo(self.tracknodepath)
+                    child.hide() if not self.window.show_collisions else child.show()
                     if child.getName().startswith("male"):
                         child.node().setIntoCollideMask(BitMask32.bit(1))
                         child.node().setFromCollideMask(BitMask32.bit(2))
@@ -65,7 +69,9 @@ class Track:
                     else:
                         child.node().setIntoCollideMask(BitMask32.bit(2))
                         child.node().setFromCollideMask(BitMask32.bit(1))
-
+        self.tracknodepath.wrtReparentTo(self.nodepath)
+        self.tracknodepath.setPos(self.center_offset.x, self.center_offset.y, self.z_offset)
+        
     def removeNode(self):
         """Remove this track from the scene"""
         self.nodepath.removeNode()
@@ -77,8 +83,10 @@ class Track:
                 self.window.selectTextureStage, 
                 self.window.selectTexture, 1
             )
+            self.tracknodepath.setShaderOff(1)
         else:
             try:
                 self.tracknodepath.clearTexture(self.window.selectTextureStage)
             except:
                 pass
+            self.tracknodepath.setShaderAuto()

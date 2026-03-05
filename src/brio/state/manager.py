@@ -2,6 +2,7 @@
 State management for undo/redo functionality
 """
 
+from brio.assets import Assets
 from direct.showbase import DirectObject
 from ..logging import get_logger
 
@@ -94,6 +95,7 @@ class StateManager(DirectObject.DirectObject):
                 self.window.table.nodepath,
                 track_data["track_file"],
                 track_data["track_file"].split(".")[0],
+                track_tag="street" if self.window.mode == "street" else "track",
             )
             new_track.nodepath.setPos(track_data["pos"])
             new_track.nodepath.setHpr(track_data["hpr"])

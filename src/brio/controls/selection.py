@@ -106,6 +106,8 @@ class SelectionControl(DirectObject.DirectObject):
                 entry = entries[0]
                 pickedObj = entry.getIntoNodePath()
                 track = pickedObj.findNetTag("track")
+                if track.isEmpty():
+                    track = pickedObj.findNetTag("street")
                 if not track.isEmpty():
                     track = self.findTrackByNodePath(track)
                     return track
@@ -231,8 +233,13 @@ class SelectionControl(DirectObject.DirectObject):
             both_tagged = (
                 entry.getFromNodePath().getParent().hasNetTag("track") and 
                 entry.getIntoNodePath().getParent().hasNetTag("track")
+            ) or (
+                entry.getFromNodePath().getParent().hasNetTag("street") and
+                entry.getIntoNodePath().getParent().hasNetTag("street")
             )
-            if not both_tagged:
+            special_case = ((entry.getFromNodePath().getParent().hasNetTag("track") and entry.getIntoNodePath().getParent().hasNetTag("street")) or (entry.getFromNodePath().getParent().hasNetTag("street") and entry.getIntoNodePath().getParent().hasNetTag("track"))) and ('rail' in self.findTrackByNodePath(entry.getFromNodePath().getParent()).name or 'rail' in self.findTrackByNodePath(entry.getIntoNodePath().getParent()).name)
+            if not both_tagged and not special_case:   
+                logger.debug('Skipping entry without track tags: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
                 continue
             track_entries.append(entry)
         return track_entries
@@ -264,15 +271,7 @@ class SelectionControl(DirectObject.DirectObject):
                         self.getConnectedTracks(from_track, tracks_to_check, connected_tracks)
         
         self.window.trackHandler.clearEntries()
-        return connected_tracks
-
-    def collisionTask(self, task):
-        """Task for checking collisions"""
-        entries = self.traverseConnectedTracks()
-        for entry in entries:
-            logger.debug('Processing collision entry: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
-            self.handleCollision(entry)
-        return task.cont    
+        return connected_tracks   
     
     def onCollision(self, entries=None):
         """Handle track connection/snapping on collision"""
@@ -312,6 +311,12 @@ class SelectionControl(DirectObject.DirectObject):
                             self.handleCollision(entry)
                             entries.remove(entry)
                             break
+                        else:
+                            logger.debug(f'Collision detected but not within snapping thresholds (distance: {distance:.2f}, angle: {angle_diff:.2f}°)')
+                else:
+                    logger.debug('Collision detected but could not determine planes for entry: %s', entry)
+            else:
+                logger.debug('Collision detected between active tracks, skipping snapping: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
             
         self.window.trackHandler.clearEntries()
 

@@ -39,7 +39,9 @@ class Colors:
         "Curved": todecimal(rgba(80, 180, 80, 1)),      # Green
         "Crossing": todecimal(rgba(220, 60, 50, 1)),    # Red
         "Switches": todecimal(rgba(240, 140, 50, 1)),   # Orange
+        "Rail": todecimal(rgba(240, 140, 50, 1)),   # Orange
         "Elevated": todecimal(rgba(160, 100, 180, 1)),  # Purple
+        "Roundabout": todecimal(rgba(160, 100, 180, 1)),  # Purple
     }
 
 

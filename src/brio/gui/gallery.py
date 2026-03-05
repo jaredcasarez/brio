@@ -3,6 +3,7 @@ Track gallery for browsing and placing tracks
 """
 
 import glob
+from hmac import new
 import threading
 
 from direct.showbase import DirectObject
@@ -23,11 +24,12 @@ logger = get_logger(__name__)
 class TrackGallery:
     """Track selection gallery with thumbnails and preview"""
     
-    track_cats = Assets.track_categories
-    track_files = Assets.get_all_track_files()
-    event_handler = DirectObject.DirectObject()
+
     
     def __init__(self, window, parent, top_offset=0.2):
+        self.track_cats = Assets.get_track_categories()
+        self.track_files = Assets.get_all_track_files()
+        self.event_handler = DirectObject.DirectObject()
         self.window = window
         self.parent = parent
         self.current_cat = "Straight"
@@ -477,7 +479,9 @@ class TrackGallery:
             self.window.table.nodepath,
             track_files[self.cat_indices[self.current_cat]],
             self.track_file.split(".")[0],
+            track_tag="street" if self.window.mode == "street" else "track",
         )
+        new_track.tracknodepath.setShaderAuto()
         self.window.table.tracks.append(new_track)
         self.window.selector.resetSelection(message=False)
         self.window.selector.select(new_track, message=False)
@@ -487,3 +491,8 @@ class TrackGallery:
     def updateLabel(self):
         """Compatibility alias"""
         self._updateLabels()
+    
+    def destroy(self):
+        """Clean up the gallery"""
+        self.frame.destroy()
+        self.event_handler.ignoreAll()

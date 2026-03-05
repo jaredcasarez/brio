@@ -63,6 +63,14 @@ class GUI:
         # Start status update task
         self.window.taskMgr.add(self._updateStatus, "updateStatusTask")
     
+    def reset(self):
+        """Reset the GUI to initial state (e.g. after mode switch)"""
+        self.sidebar.destroy()
+        self.sidebar_border.destroy()
+        self.preview.destroy()
+        self.properties_panel.destroy()
+        self.__init__(self.window)
+        
     def _createToolbar(self):
         """Create the toolbar with file operation buttons"""
         toolbar_y = 1 - self.toolbar_height / 2
@@ -135,15 +143,9 @@ class GUI:
         )
         
         self.category_buttons = {}
-        categories = ["Straight", "Curved", "Crossing", "Switches", "Elevated"]
+        categories = Assets.get_track_categories()
         
-        cat_icons = {
-            "Straight": Assets.icon_straight,
-            "Curved": Assets.icon_curved,
-            "Crossing": Assets.icon_crossing,
-            "Switches": Assets.icon_switches,
-            "Elevated": Assets.icon_elevated,
-        }
+        cat_icons = {cat: Assets.category_icon(cat) for cat in categories}
         
         for i, cat in enumerate(categories):
             btn_background = DirectButton(

@@ -53,21 +53,24 @@ from ..assets import Assets
 class BamConverter(ShowBase):
     """Collision editor application for BAM models"""
 
-    def __init__(self, tracks_dir: Optional[str] = None):
+    def __init__(self, file_extension: str = ".bam"):
         """
         Initialize the collision editor.
         
         Args:
             tracks_dir: Path to the tracks directory containing BAM files.
                        Defaults to ./tracks/bam relative to current directory.
+            file_extension: File extension for the models to load. Defaults to ".bam".
         """
         super().__init__()
-        
+        self.file_list = []
+        self.file_extension = file_extension
         self.eventController = DirectObject.DirectObject()
         self.entities = []
         
         # Key bindings
         self._setup_keybindings()
+        self._setup_axis_visual()
         
         self.stats = {
             'name': '',
@@ -108,6 +111,13 @@ class BamConverter(ShowBase):
         self.cycleActive()
         self.updateStats()
 
+    def _setup_axis_visual(self):
+        """Set up visual indicators for the axes"""
+        self.axis = self.loader.loadModel("models/misc/xyzAxis")
+        self.axis.reparentTo(self.render)
+        self.axis.setPos(100, 50, 0)
+        self.axis.setScale(5)
+        
     def _setup_keybindings(self):
         """Setup all keyboard event handlers"""
         ec = self.eventController
@@ -149,6 +159,10 @@ class BamConverter(ShowBase):
         ec.accept('e', self.rotate, extraArgs=[1])
         ec.accept('shift-q', self.rotate, extraArgs=[-90])
         ec.accept('shift-e', self.rotate, extraArgs=[90])
+        ec.accept('control-e', self.rotate, extraArgs=[90, True, True])
+        ec.accept('control-q', self.rotate, extraArgs=[90, False, True])
+        ec.accept('shift-space', self.rotate, extraArgs=[90, True, False])
+        ec.accept('control-space', self.rotate, extraArgs=[90, False, False])
         ec.accept('f', self.flip)
         
         # Scaling
@@ -266,10 +280,19 @@ class BamConverter(ShowBase):
             self.active.setPos(self.active.getPos() + Vec3(amount, 0, 0))
             self.updateStats()
 
-    def rotate(self, amount):
+    def rotate(self, amount, non_horizontal=False, track=False):
         """Rotate active entity"""
-        if self.active:
-            self.active.setH(self.active.getH() + amount)
+        if track: 
+            to_rotate = self.model
+            print('rotating model')
+        else: to_rotate = self.active
+        if self.active or track:
+            if non_horizontal:
+                to_rotate.setP(to_rotate.getP() + amount)
+            elif non_horizontal is None:
+                to_rotate.setH(to_rotate.getH() + amount)
+            else:
+                to_rotate.setR(to_rotate.getR() + amount)
             self.updateStats()
 
     def flip(self):
@@ -320,7 +343,7 @@ class BamConverter(ShowBase):
                 print('Found collision child:', child.getName())
                 self.entities.append(child)
                 self.active = child
-                child.reparentTo(self.model)
+                child.wrtReparentTo(self.model)
             print('entities:', self.entities)
             
         self.model.reparentTo(self.render)
@@ -374,9 +397,8 @@ class BamConverter(ShowBase):
         """Save the model with collision data"""
         if not self.active or not self.modelfile:
             return
-            
         if not self.modelfile.endswith('_collision.bam'):
-            filename = self.modelfile.replace('.bam', '_collision.bam')
+            filename = self.modelfile.replace(self.file_extension, '_collision.bam')
             noncollision_dir = Path(self.modelfile).parent / 'noncollision'
             noncollision_dir.mkdir(exist_ok=True)
             
@@ -384,8 +406,8 @@ class BamConverter(ShowBase):
                 shutil.move(self.modelfile, str(noncollision_dir / os.path.basename(self.modelfile)))
             except Exception as e:
                 print(f"Error moving file: {e}")
-        elif self.modelfile.endswith('.glb'):
-            filename = self.modelfile.replace('.glb', '_collision.bam')
+        elif self.modelfile.endswith(self.file_extension) and self.file_extension != '.bam':
+            filename = self.modelfile.replace(self.file_extension, '_collision.bam')
         else:
             filename = self.modelfile
             
@@ -434,14 +456,21 @@ def main():
         description="Collision Editor - Add collision geometry to BAM models"
     )
     parser.add_argument(
-        "--tracks-dir",
+        "--mode",
         type=str,
-        default="./tracks/bam",
-        help="Path to the tracks directory containing BAM files"
+        choices=Assets.get_available_modes(),
+        default=Assets.get_mode(),
+        help="Asset mode to use (affects which models are loaded)"
+    )
+    parser.add_argument(
+        "--extension",
+        type=str,
+        default=".bam",
+        help="File extension for the models to load"
     )
     args = parser.parse_args()
-    
-    app = BamConverter(tracks_dir=args.tracks_dir)
+    Assets.set_mode(args.mode)
+    app = BamConverter(file_extension=args.extension)
     app.run()
 
 

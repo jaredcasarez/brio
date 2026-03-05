@@ -143,3 +143,7 @@ class PropertiesPanel:
             self.length_label['text'] = "Table length: {} cm".format(int(value / 10))
             
         self.window.table.resize(value, which=which)
+    
+    def destroy(self):
+        """Clean up the properties panel"""
+        self.frame.destroy()

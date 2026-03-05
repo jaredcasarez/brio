@@ -20,7 +20,7 @@ license = "MIT"
 license-files = ["LICEN[CS]E.*"]
 
 [project.gui-scripts]
-brio = "brio:main"
+brio = "brio.main:main"
 
 [project.scripts]
 brio-collision-editor = "brio.tools.collisionedit:main"

@@ -4,7 +4,7 @@ Brio - A Panda3D-based train track layout designer
 
 from logging import config
 
-from .main import BrioApp, main
+from .sandbox import SandboxApp
 from .constants import Colors
 from .assets import Assets
 from .utils import todecimal, rgba
@@ -14,8 +14,8 @@ from .logging import get_logger, configure_logging, set_level, LogLevel
 from . import tools
 
 __all__ =  [
-    "BrioApp",
-    "main",
+    "SandboxApp",
+    "sandbox",
     "Colors",
     "Assets",
     "todecimal",

@@ -63,6 +63,7 @@ class Clipboard(DirectObject.DirectObject):
                 pos=surfacepoint + track_info["pos"],
                 hpr=track_info["hpr"],
                 scale=track_info["scale"],
+                track_tag="street" if self.window.mode == "street" else "track",
             )
             self.window.table.tracks.append(new_track)
             self.window.selector.select(new_track, message=False)
