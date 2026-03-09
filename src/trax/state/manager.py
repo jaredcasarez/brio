@@ -2,7 +2,7 @@
 State management for undo/redo functionality
 """
 
-from brio.assets import Assets
+from trax.assets import Assets
 from direct.showbase import DirectObject
 from ..logging import get_logger
 

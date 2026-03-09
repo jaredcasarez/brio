@@ -4,7 +4,7 @@ Color constants and application settings
 
 from pydoc import text
 
-import brio
+import trax
 
 from .utils import todecimal, rgba
 

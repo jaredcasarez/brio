@@ -1,5 +1,5 @@
 """
-Brio - A Panda3D-based train track layout designer
+trax - A Panda3D-based track layout designer
 """
 
 from logging import config
@@ -10,7 +10,7 @@ from .assets import Assets
 from .utils import todecimal, rgba
 from .logging import get_logger, configure_logging, set_level, LogLevel
 
-# Tools are available via brio.tools
+# Tools are available via trax.tools
 from . import tools
 
 __all__ =  [

@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 class FileBrowser(DirectObject.DirectObject):
     """A file browser dialog using only Panda3D DirectGUI components"""
     
-    def __init__(self, window, mode="load", file_extension=".brio", 
+    def __init__(self, window, mode="load", file_extension=".trax", 
                  title="File Browser", default_dir="./saves", on_confirm=None, on_cancel=None):
         """
         Initialize the file browser.
@@ -30,7 +30,7 @@ class FileBrowser(DirectObject.DirectObject):
         Args:
             window: The main application window
             mode: "load" or "save"
-            file_extension: File extension filter (e.g., ".brio", ".bom")
+            file_extension: File extension filter (e.g., ".trax", ".bom")
             title: Title for the dialog
             default_dir: Starting directory
             on_confirm: Callback function when file is selected (receives filepath)
@@ -446,14 +446,14 @@ class FileSelector(DirectObject.DirectObject):
     
     def __init__(self, window):
         self.window = window
-        self.saved_files = glob.glob("./saves/*.brio") if os.path.exists("./saves") else []
+        self.saved_files = glob.glob("./saves/*.trax") if os.path.exists("./saves") else []
         self.file_index = 0
         self.file_input = None
         self.result_file = None
     
     def getSavedFiles(self):
         """Refresh the list of saved files"""
-        self.saved_files = glob.glob("./saves/*.brio") if os.path.exists("./saves") else []
+        self.saved_files = glob.glob("./saves/*.trax") if os.path.exists("./saves") else []
         return self.saved_files
     
     def askBOM(self):
@@ -484,7 +484,7 @@ class FileSelector(DirectObject.DirectObject):
         self.browser = FileBrowser(
             self.window,
             mode="save",
-            file_extension=".brio",
+            file_extension=".trax",
             title="Save Project",
             default_dir="./saves",
             on_confirm=self._savefile,
@@ -494,7 +494,7 @@ class FileSelector(DirectObject.DirectObject):
     def _savefile(self, filepath):
         """Handle save button click - save state to file"""
         self.result_file = filepath
-        self.window.current_projectfile = os.path.basename(filepath).replace('.brio', '')
+        self.window.current_projectfile = os.path.basename(filepath).replace('.trax', '')
         
         state = self.window.stateManager.getState()
         state_reformatted = {
@@ -543,7 +543,7 @@ class FileSelector(DirectObject.DirectObject):
         self.browser = FileBrowser(
             self.window,
             mode="load",
-            file_extension=".brio",
+            file_extension=".trax",
             title="Open Project",
             default_dir="./saves",
             on_confirm=self._loadfile,
@@ -590,7 +590,7 @@ class FileSelector(DirectObject.DirectObject):
             state['tracks'].append(track_dict)
         
         self.window.stateManager.restoreState(state)
-        self.window.current_projectfile = os.path.basename(filepath).replace('.brio', '')
+        self.window.current_projectfile = os.path.basename(filepath).replace('.trax', '')
         logger.info(f"Loaded project: {self.window.current_projectfile}")
     
     def loadFile(self):

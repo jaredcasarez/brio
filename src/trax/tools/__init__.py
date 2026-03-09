@@ -1,5 +1,5 @@
 """
-Brio Tools - Standalone utilities for track and model editing
+trax Tools - Standalone utilities for track and model editing
 """
 
 from .collisionedit import BamConverter, main as collision_editor_main

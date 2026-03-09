@@ -1,5 +1,5 @@
 """
-Asset path configuration for Brio
+Asset path configuration for trax
 
 Provides centralized path management for all assets (textures, models, icons, fonts).
 Uses relative paths from the package root to work regardless of working directory.
@@ -29,7 +29,7 @@ _MODE_CONFIG = {
     },
     "citystreets": {
         "categories": ["Straight", "Curved", "Crossing","Rail", "Roundabout"],
-        "display_name": "Streets",
+        "display_name": "CityStreets",
         "track_texture": "paper.jpeg",
         "select_texture": "plywood_blue.jpeg",
         "table_texture": "paper.jpeg",

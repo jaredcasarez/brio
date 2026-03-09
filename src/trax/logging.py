@@ -1,5 +1,5 @@
 """
-Logging configuration for Brio
+Logging configuration for trax
 
 Provides a centralized logging system with configurable levels and formatters.
 """
@@ -29,11 +29,11 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         Configured logger instance
     """
-    # Create logger with hierarchical name under brio
-    if name.startswith('brio.'):
+    # Create logger with hierarchical name under trax
+    if name.startswith('trax.'):
         logger_name = name
     else:
-        logger_name = f"brio.{name}"
+        logger_name = f"trax.{name}"
     
     return logging.getLogger(logger_name)
 
@@ -46,7 +46,7 @@ def configure_logging(
     date_format: str = "%H:%M:%S",
 ) -> logging.Logger:
     """
-    Configure the root brio logger.
+    Configure the root trax logger.
     
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
@@ -58,8 +58,8 @@ def configure_logging(
     Returns:
         The configured root logger
     """
-    # Get the root brio logger
-    root_logger = logging.getLogger("brio")
+    # Get the root trax logger
+    root_logger = logging.getLogger("trax")
     root_logger.setLevel(level)
     
     # Clear existing handlers
@@ -96,12 +96,12 @@ def configure_logging(
 
 def set_level(level: int) -> None:
     """
-    Set the logging level for all brio loggers.
+    Set the logging level for all trax loggers.
     
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     """
-    logging.getLogger("brio").setLevel(level)
+    logging.getLogger("trax").setLevel(level)
 
 
 def enable_debug() -> None:

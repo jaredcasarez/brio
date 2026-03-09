@@ -3,7 +3,7 @@ from .logging import LogLevel, configure_logging
 from .sandbox import SandboxApp
 def main():
     """Entry point"""
-    parser = argparse.ArgumentParser(description="Brio - A Panda3D-based train track layout designer")
+    parser = argparse.ArgumentParser(description="trax - A Panda3D-based track layout designer")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--logfile", type=str, help="Specify a log file")
     parser.add_argument("--mode", type=str, choices=['brio', 'citystreets'], default='brio', help="Choose application mode (default: citystreets)")

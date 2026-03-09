@@ -22,7 +22,7 @@ class PropertiesPanel:
             parent=parent,
             frameColor=Colors.panelColor,
             frameSize=(0.01, 0.44, -1.1, -0.2),
-            pos=(0, 0, 0.15),
+            pos=(0, 0, -0.1),
             relief=DGG.FLAT,
         )
         
@@ -37,7 +37,7 @@ class PropertiesPanel:
             image=self.brio_inactive,
             image_scale=0.07,
             frameColor=(0, 0, 0, 0),
-            pos=(0.125, 0, -1.02),
+            pos=(0.125, 0, -0.8),
             relief=DGG.FLAT,
             command=self._setMode,
             extraArgs=['brio'],
@@ -50,7 +50,7 @@ class PropertiesPanel:
             image=self.citystreets_inactive,
             image_scale=0.07,
             frameColor=(0, 0, 0, 0),
-            pos=(0.32, 0, -1.02),
+            pos=(0.32, 0, -0.80),
             relief=DGG.FLAT,
             command=self._setMode,
             extraArgs=['citystreets'],
@@ -114,7 +114,7 @@ class PropertiesPanel:
             parent=self.frame,
             frameColor=(0, 0, 0, 0),
             frameSize=(0.02, 0.4, -0.7, 0),
-            pos=(0.035, 0, -0.15),
+            pos=(0.035, 0, -0.3),
             relief=DGG.FLAT,
         )
         
