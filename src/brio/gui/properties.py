@@ -3,12 +3,13 @@ Properties panel for track and table settings
 """
 
 from direct.gui.DirectGui import (
-    DirectFrame, DirectLabel, DirectSlider, DGG
+    DirectFrame, DirectLabel, DirectSlider, DirectButton, DGG
 )
 from panda3d.core import TextNode
 
 from ..constants import Colors
 from ..logging import get_logger
+from ..assets import Assets
 
 logger = get_logger(__name__)
 
@@ -24,19 +25,88 @@ class PropertiesPanel:
             pos=(0, 0, 0.15),
             relief=DGG.FLAT,
         )
-        self.label = DirectLabel(
+        
+        # Load mode icons
+        self.brio_active = loader.loadTexture(Assets.icon_brio_active)
+        self.brio_inactive = loader.loadTexture(Assets.icon_brio_inactive)
+        self.citystreets_active = loader.loadTexture(Assets.icon_citystreets_active)
+        self.citystreets_inactive = loader.loadTexture(Assets.icon_citystreets_inactive)
+        
+        self.brio_mode_button = DirectButton(
             parent=self.frame,
-            text="Parameters",
-            text_font=self.window.font,
-            text_scale=0.04,
-            text_fg=Colors.textColor,
-            text_align=TextNode.ALeft,
-            pos=(0.035, 0, -0.25),
+            image=self.brio_inactive,
+            image_scale=0.07,
             frameColor=(0, 0, 0, 0),
+            pos=(0.125, 0, -1.02),
+            relief=DGG.FLAT,
+            command=self._setMode,
+            extraArgs=['brio'],
+        )
+        self.brio_mode_button.bind(DGG.ENTER, lambda x: self._onModeButtonEnter(self.brio_mode_button, 'brio'))
+        self.brio_mode_button.bind(DGG.EXIT, lambda x: self._onModeButtonExit(self.brio_mode_button, 'brio'))
+        
+        self.street_mode_button = DirectButton(
+            parent=self.frame,
+            image=self.citystreets_inactive,
+            image_scale=0.07,
+            frameColor=(0, 0, 0, 0),
+            pos=(0.32, 0, -1.02),
+            relief=DGG.FLAT,
+            command=self._setMode,
+            extraArgs=['citystreets'],
+        )
+        
+        self.street_mode_button.bind(DGG.ENTER, lambda x: self._onModeButtonEnter(self.street_mode_button, 'citystreets'))
+        self.street_mode_button.bind(DGG.EXIT, lambda x: self._onModeButtonExit(self.street_mode_button, 'citystreets'))
+        self.brio_mode_button.setTransparency(True)
+        self.street_mode_button.setTransparency(True)
+        self._disabledColor = (
+            Colors.buttonColor[0] * 0.5,
+            Colors.buttonColor[1] * 0.5,
+            Colors.buttonColor[2] * 0.5,
+            Colors.buttonColor[3],
+        )
+        self._disabledTextColor = (
+            Colors.textColor[0] * 0.4,
+            Colors.textColor[1] * 0.4,
+            Colors.textColor[2] * 0.4,
+            Colors.textColor[3],
         )
         
         self.makePropertiesTable()
         
+        # Initialize button states after all widgets are created
+        self.updateModeButtons()
+    
+    def _setMode(self, mode):
+        """Set the application mode and update button states"""
+        self.window.setMode(mode)
+        self.updateModeButtons()
+    
+    def _onModeButtonEnter(self, button, mode):
+        """Highlight mode button on hover"""
+        # if self.window.mode != mode:
+        button['image_scale'] = 0.08
+        button.setColorScale(1.3, 1.3, 1.3, 1)
+    
+    def _onModeButtonExit(self, button, mode):
+        """Reset mode button color on hover exit"""
+        # if self.window.mode != mode:
+        button['image_scale'] = 0.07
+        button.setColorScale(1, 1, 1, 1)
+
+    def updateModeButtons(self):
+        """Update mode button colors based on current mode"""
+        try:
+            if self.window.mode == 'brio':
+                self.brio_mode_button.setImage(self.brio_active)
+                self.street_mode_button.setImage(self.citystreets_inactive)
+            else:
+                self.street_mode_button.setImage(self.citystreets_active)
+                self.brio_mode_button.setImage(self.brio_inactive)
+        except Exception as e:
+            logger.error("Error updating mode buttons: %s", e)
+    
     def makePropertiesTable(self):
         """Create the properties table with sliders"""
         # Main container frame for all sliders

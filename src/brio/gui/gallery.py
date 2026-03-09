@@ -332,7 +332,7 @@ class TrackGallery:
                 except Exception as e:
                     logger.warning(f"Could not load thumbnail for {tracks[i]}: {e}")
             else:
-                btn['frameColor'] = todecimal(rgba(220, 220, 220, 0.5))
+                btn['frameColor'] = Colors.emptyButtonColor
     
     def setCategory(self, category):
         """Change the active category"""

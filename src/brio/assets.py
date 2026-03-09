@@ -144,6 +144,11 @@ class Assets:
     icon_roundabout = str(_ASSETS_DIR / "icons" / "roundabout.png")
     icon_rail = str(_ASSETS_DIR / "icons" / "rail.png")
     
+    # Mode icons
+    icon_brio_inactive = str(_ASSETS_DIR / "icons" / "brio_inactive.png")
+    icon_brio_active = str(_ASSETS_DIR / "icons" / "brio_active.png")
+    icon_citystreets_inactive = str(_ASSETS_DIR / "icons" / "citystreets_inactive.png")
+    icon_citystreets_active = str(_ASSETS_DIR / "icons" / "citystreets_active.png")
     # --- Categories (mode-dependent) ---
     
     @classmethod

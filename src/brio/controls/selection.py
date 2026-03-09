@@ -146,6 +146,9 @@ class SelectionControl(DirectObject.DirectObject):
                     if mode != 'multiselect':
                         self.resetSelection(message=False)
                     self.select(track)
+                    if self.window.mode not in track.track_file.split('assets')[-1]:
+                        self.window.toggleMode()
+                    self.window.gui.preview.specifyTrack(track.track_file)
         elif mode not in ["multiselect", "connections"]:
             self.resetSelection()
             self.selection = None

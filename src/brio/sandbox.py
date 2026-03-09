@@ -60,6 +60,7 @@ class SandboxApp(ShowBase):
     def __init__(self, mode: str = 'brio', **kwargs):
         # Set asset mode before loading any assets
         Assets.set_mode(mode)
+        self.mode = mode
         
         # Initialize the application
         ShowBase.__init__(self)
@@ -167,20 +168,26 @@ class SandboxApp(ShowBase):
         self.camera.lookAt(0, 0, 0)
         self.camera_controller = CameraControl(self, self.camera)
         self.units = []
-        
-        modeSwitcher = DirectObject()
-        modeSwitcher.accept("1", self.setMode, ["brio"])
-        modeSwitcher.accept("2", self.setMode, ["citystreets"])
+
+    def toggleMode(self):
+        """Toggle between 'brio' and 'street' modes"""
+        current_mode = self.mode
+        new_mode = 'citystreets' if current_mode == 'brio' else 'brio'
+        self.setMode(new_mode)
 
     def setMode(self, mode):
-         """Switch between 'brio' and 'street' modes"""
-         if mode == self.mode:
-             return  # No change
-         Assets.set_mode(mode)
-         self.gui.reset()
+        """Switch between 'brio' and 'street' modes"""
+        if mode == self.mode:
+            return  # No change
+        self.mode = mode
+        Assets.set_mode(mode)
+        self.gui.reset()
+        
+    
     @property
     def mode(self):
         return Assets._mode
+    
     @mode.setter
     def mode(self, value):
         Assets.set_mode(value)

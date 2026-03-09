@@ -2,6 +2,10 @@
 Color constants and application settings
 """
 
+from pydoc import text
+
+import brio
+
 from .utils import todecimal, rgba
 
 
@@ -22,6 +26,10 @@ class Colors:
     brioBlue = todecimal(rgba(65, 135, 200, 1))
     brioYellow = todecimal(rgba(245, 200, 60, 1))
     brioOrange = todecimal(rgba(240, 140, 50, 1))
+    brioPurple = todecimal(rgba(160, 100, 180, 1))
+    brioPink = todecimal(rgba(255, 150, 200, 1))
+    brioCyan = todecimal(rgba(50, 200, 220, 1))
+    brioBrown = todecimal(rgba(150, 100, 50, 1))
     
     # UI Colors - playful and warm
     panelColor = todecimal(rgba(250, 245, 235, 1))  # Warm white
@@ -32,6 +40,10 @@ class Colors:
     textLightColor = todecimal(rgba(255, 255, 255, 1))  # White text
     backgroundColor = todecimal(rgba(65, 150, 255, 1))  # Soft sky blue
     statusBarColor = todecimal(rgba(60, 50, 40, 1))  # Dark bar
+    textActiveColor = todecimal(rgba(255, 255, 255, 1))  # White text for active elements
+    buttonHoverColor = todecimal(rgba(255, 230, 180, 1))  # Lighter hover color
+    textHoverColor = todecimal(rgba(80, 60, 40, 1))  # Slightly lighter text on hover
+    emptyButtonColor = todecimal(rgba(220, 220, 220, 0.5))
     
     # Category colors (vibrant tabs)
     categoryColors = {
