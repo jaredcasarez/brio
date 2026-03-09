@@ -385,9 +385,9 @@ class TrackGallery:
             )
             if hasattr(self, "track"):
                 self.track.nodepath.removeNode()
-            self.new_track.nodepath.setScale(0.00125, 0.00125, 0.00125)
-            self.new_track.nodepath.setHpr(-90, 45, 0)
+            self.new_track.nodepath.setScale(0.0009, 0.00125, 0.00125)
             self.new_track.nodepath.setPos(0.215, 0, -0.175)
+            self.new_track.nodepath.setHpr(-90, 45, 0)
             self.track = self.new_track
             break
         self._updateLabels()

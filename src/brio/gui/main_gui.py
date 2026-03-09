@@ -86,7 +86,7 @@ class GUI:
         # App title on the left with logo styling
         self.title_label = DirectLabel(
             parent=self.toolbar,
-            text="brio",
+            text="trax",
             text_font=self.window.font,
             text_scale=0.055,
             text_fg=(1, 1, 1, 1),
@@ -132,7 +132,7 @@ class GUI:
     def _createCategoryTabs(self):
         """Create colorful category tab buttons"""
         tab_y = 1 - self.toolbar_height - self.tab_height / 2 
-        tab_width = 0.43 / len(Colors.categoryColors)
+        tab_width = 0.6 / len(Colors.categoryColors)
         
         self.tab_frame = DirectFrame(
             parent=self.sidebar,
