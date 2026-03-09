@@ -189,6 +189,48 @@ class BamConverter(ShowBase):
         ec.accept('v-repeat', self.vertical_move, extraArgs=[-1])
         ec.accept('shift-v', self.vertical_move, extraArgs=[-50])
 
+        ec.accept("control-c", self.allcopy)
+        ec.accept("control-v", self.allpaste)
+    
+    def allcopy(self):
+        """Copy active entity data to clipboard"""
+        self.clipboard_data = []
+        for entity in self.entities:
+                self.clipboard_data.append({
+                    'name': entity.getName(),
+                    'pos': list(entity.getPos(self.render)),
+                    'hpr': list(entity.getHpr(self.render)),
+                })
+                print('######',list(entity.getPos(self.render)), list(entity.getHpr(self.render)))
+        print("Copied to clipboard:", self.clipboard_data)
+    
+    def allpaste(self):
+        """Paste entity data from clipboard to active entity"""
+        
+        if self.clipboard_data:
+            for data in self.clipboard_data:
+                if data['name'].endswith('sphere'):
+                    print('Pasting sphere with data:', data)
+                    self.addSphere(**{
+                        'x': data['pos'][0],
+                        'y': data['pos'][1],
+                        'z': data['pos'][2],
+                        'h': data['hpr'][0],
+                        'p': data['hpr'][1],
+                        'r': data['hpr'][2]
+                    })
+                elif data['name'].endswith('plane'):
+                    print('Pasting plane with data:', data)
+                    self.addPlane(**{
+                        'x': data['pos'][0],
+                        'y': data['pos'][1],
+                        'z': data['pos'][2],
+                        'h': data['hpr'][0],
+                        'p': data['hpr'][1],
+                        'r': data['hpr'][2]
+                    })
+            self.updateStats()
+            print("Pasted from clipboard:", self.clipboard_data)
     def _load_file_list(self):
         """Load and sort the list of model files from the tracks directory"""
         # Sort by filename
@@ -215,8 +257,8 @@ class BamConverter(ShowBase):
         if self.active:
             self.stats['model'] = os.path.basename(self.modelfile).split('.')[0] if self.modelfile else "None"
             self.stats['name'] = self.active.getName()
-            self.stats['pos'] = list(self.active.getPos())
-            self.stats['hpr'] = list(self.active.getHpr())
+            self.stats['pos'] = list(self.active.getPos(self.render))
+            self.stats['hpr'] = list(self.active.getHpr(self.render))
             self.stats['scale'] = self.active.getScale()
             self.textObject.setText(
                 f"{self.stats['model']}\n{self.stats['name']}\n"
@@ -239,7 +281,7 @@ class BamConverter(ShowBase):
             self.active_indicator.setPos(self.active.getPos(self.render))
         return task.cont
 
-    def addSphere(self):
+    def addSphere(self, **kwargs):
         """Add a new collision sphere"""
         print("Adding sphere")
         collision_node = CollisionNode('male_sphere')
@@ -248,12 +290,28 @@ class BamConverter(ShowBase):
         cnodepath.node().addSolid(shape)
         cnodepath.setColor(1, 0, 0, 1)
         cnodepath.show()
-        cnodepath.setPos(self.active.getPos() if self.active else Vec3(0, 0, 0))
+        cnodepath.setPos(self.active.getPos(self.render) if self.active else Vec3(0, 0, 0))
+        print('x:',kwargs.get('x', None),'isx:', isinstance(kwargs.get('x', False), (int, float)))
+        if isinstance(kwargs.get('x', None), (int, float)):
+            cnodepath.setX(self.render, kwargs['x'])
+            print('setting x to', kwargs['x'])
+        if isinstance(kwargs.get('y', None), (int, float)):
+            cnodepath.setY(self.render, kwargs['y'])
+            print('setting y to', kwargs['y'])
+        if isinstance(kwargs.get('z', None), (int, float)):
+            cnodepath.setZ(self.render, kwargs['z'])
+            print('setting z to', kwargs['z'])
+        if isinstance(kwargs.get('h', None), (int, float)):
+            cnodepath.setH(self.render, kwargs['h'])
+        if isinstance(kwargs.get('p', None), (int, float)):
+            cnodepath.setP(self.render, kwargs['p'])
+        if isinstance(kwargs.get('r', None), (int, float)):
+            cnodepath.setR(self.render, kwargs['r'])
         self.entities.append(cnodepath)
         self.active = cnodepath
         self.textObject.setText(f"{self.active.getName()}")
     
-    def addPlane(self):
+    def addPlane(self, **kwargs):
         """Add a new collision plane"""
         print("Adding plane")
         collision_node = CollisionNode('male_plane')
@@ -263,7 +321,20 @@ class BamConverter(ShowBase):
         cnodepath.setPos(self.model.getChild(0).getBounds().getCenter())
         cnodepath.setColor(1, 0, 0, 1)
         cnodepath.show()
-        cnodepath.setPos(self.active.getPos() if self.active else Vec3(0, 0, 0))
+        cnodepath.setPos(self.active.getPos(self.render) if self.active else Vec3(0, 0, 0))
+        if isinstance(kwargs.get('x', None), (int, float)):
+            cnodepath.setX(self.render, kwargs['x'])
+        if isinstance(kwargs.get('y', None), (int, float)):
+            cnodepath.setY(self.render, kwargs['y'])
+        if isinstance(kwargs.get('z', None), (int, float)):
+            cnodepath.setZ(self.render, kwargs['z'])
+        if isinstance(kwargs.get('h', None), (int, float)):
+            cnodepath.setH(self.render, kwargs['h'])
+        if isinstance(kwargs.get('p', None), (int, float)):
+            cnodepath.setP(self.render, kwargs['p'])
+        if isinstance(kwargs.get('r', None), (int, float)):
+            cnodepath.setR(self.render, kwargs['r'])
+            
         self.entities.append(cnodepath)
         self.active = cnodepath
         self.updateStats()
@@ -271,16 +342,16 @@ class BamConverter(ShowBase):
     def move(self, amount):
         """Move active entity forward/backward"""
         if self.active:
-            self.active.setPos(self.active.getPos() + Vec3(0, amount, 0))
+            self.active.setPos(self.active.getPos(self.render) + Vec3(0, amount, 0))
             self.updateStats()
 
     def strafe(self, amount):
         """Move active entity left/right"""
         if self.active:
-            self.active.setPos(self.active.getPos() + Vec3(amount, 0, 0))
+            self.active.setPos(self.active.getPos(self.render) + Vec3(amount, 0, 0))
             self.updateStats()
 
-    def rotate(self, amount, non_horizontal=False, track=False):
+    def rotate(self, amount, non_horizontal=None, track=False):
         """Rotate active entity"""
         if track: 
             to_rotate = self.model
@@ -288,17 +359,17 @@ class BamConverter(ShowBase):
         else: to_rotate = self.active
         if self.active or track:
             if non_horizontal:
-                to_rotate.setP(to_rotate.getP() + amount)
+                to_rotate.setP(to_rotate.getP(self.render) + amount)
             elif non_horizontal is None:
-                to_rotate.setH(to_rotate.getH() + amount)
+                to_rotate.setH(to_rotate.getH(self.render) + amount)
             else:
-                to_rotate.setR(to_rotate.getR() + amount)
+                to_rotate.setR(to_rotate.getR(self.render) + amount)
             self.updateStats()
 
     def flip(self):
         """Flip active entity 180 degrees"""
         if self.active:
-            current_h = self.active.getH()
+            current_h = self.active.getH(self.render)
             self.active.setH(current_h + 180 if current_h < 180 else current_h - 180)
             self.updateStats()
     
@@ -312,6 +383,7 @@ class BamConverter(ShowBase):
                 max(0.1, scale.z + amount * 0.1)
             )
             self.active.setScale(new_scale)
+            self.updateStats()
     
     def camera_orbit(self, amount):
         """Orbit camera horizontally"""
@@ -325,7 +397,7 @@ class BamConverter(ShowBase):
     def vertical_move(self, amount):
         """Move active entity up/down"""
         if self.active:
-            self.active.setPos(self.active.getPos() + Vec3(0, 0, amount))
+            self.active.setPos(self.active.getPos(self.render) + Vec3(0, 0, amount))
             self.updateStats()
     
     def load(self):
