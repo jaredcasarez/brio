@@ -45,11 +45,14 @@ class StateManager(DirectObject.DirectObject):
         if self.undo_stack and state == self.undo_stack[-1]:
             logger.debug("State unchanged, not storing duplicate state")
             return
+        else:
+            for ind, track in enumerate(state['tracks']):
+                logger.debug(f"Track {ind}: {track['track_file']} at {track['pos']} selected={track['selected']}")
         self.undo_stack.append(self.current_state)
         self.current_state = state
         self.printState(state, label="Recorded State")
         self.redo_stack.clear()  # Clear redo stack on new action
-        
+    
     def getState(self):
         """Get the current state as a dictionary"""
         logger.debug("Current tracks: %s", self.window.table.tracks)
@@ -57,9 +60,9 @@ class StateManager(DirectObject.DirectObject):
             'tracks': [
                 {
                     "track_file": track.track_file,
-                    "pos": track.nodepath.getPos(),
-                    "hpr": track.nodepath.getHpr(),
-                    "scale": track.nodepath.getScale(),
+                    "pos": track.nodepath.getPos(self.window.table.inf_plane_nodepath),
+                    "hpr": track.nodepath.getHpr(self.window.table.inf_plane_nodepath),
+                    "scale": track.nodepath.getScale(self.window.table.inf_plane_nodepath),
                     "selected": track in self.window.selector.active_tracks,
                 } for track in self.window.table.tracks
             ],

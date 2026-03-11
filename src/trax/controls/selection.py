@@ -80,6 +80,7 @@ class SelectionControl(DirectObject.DirectObject):
                 self.rbc_nodepath = None
                 self.rbc = None
             if message:
+                logger.debug('state: deleteselection')
                 self.window.messenger.send("state change")
 
     def select(self, track, message=True, rbc_refresh=True):
@@ -90,6 +91,7 @@ class SelectionControl(DirectObject.DirectObject):
             if rbc_refresh:
                 self.makeCombinedNode()
             if message:
+                logger.debug(f"state: Selected track {track}")
                 self.window.messenger.send("state change")
 
     def deselect(self, track, message=True, rbc_refresh=True):
@@ -101,6 +103,7 @@ class SelectionControl(DirectObject.DirectObject):
             if rbc_refresh:
                 self.makeCombinedNode()
             if message:
+                logger.debug(f"state: Deselected track: {track}")
                 self.window.messenger.send("state change")
 
     def findMousePick(self):
@@ -162,7 +165,6 @@ class SelectionControl(DirectObject.DirectObject):
                     self.select(track)
                     if self.window.mode != track.track_type:
                         self.window.toggleMode()
-                    self.window.gui.preview.specifyTrack(track.track_file)
         elif mode not in ["multiselect", "connections"]:
             self.resetSelection()
             self.selection = None
@@ -174,6 +176,7 @@ class SelectionControl(DirectObject.DirectObject):
         self.active_tracks = []
         self.makeCombinedNode()
         if message:
+            logger.debug('state: resetselection')
             self.window.messenger.send("state change")
 
     def dragStart(self):
@@ -572,6 +575,7 @@ class SelectionControl(DirectObject.DirectObject):
                 self.window.dt * framenum, lambda task: func(diff, False), "animateTask"
             )
         if message:
+            logger.debug(f"state: animate {func.__name__} with delta {delta}")
             self.window.messenger.send("state change")
 
     def flipTrack(self, amount=180, message=True):
@@ -587,6 +591,7 @@ class SelectionControl(DirectObject.DirectObject):
                 self.selection.getR() + amount,
             )
             if message:
+                logger.debug(f"state: Flipped track by {amount} degrees")
                 self.window.messenger.send("state change")
             self.makeCombinedNode()
 
@@ -599,6 +604,7 @@ class SelectionControl(DirectObject.DirectObject):
                 self.selection.getR(),
             )
         if message:
+            logger.debug('state: rotate')
             self.window.messenger.send("state change")
         self.makeCombinedNode()
 
@@ -611,6 +617,7 @@ class SelectionControl(DirectObject.DirectObject):
             ):
                 self.selection.setZ(self.selection.getZ() + amount)
                 if message:
+                    logger.debug(f'state: raiseTrack by {amount}')
                     self.window.messenger.send("state change")
                 self.makeCombinedNode()
 

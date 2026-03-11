@@ -44,6 +44,7 @@ def configure_logging(
     console: bool = True,
     format_string: Optional[str] = None,
     date_format: str = "%H:%M:%S",
+    focus_patterns: Optional[list[str]] = None,
 ) -> logging.Logger:
     """
     Configure the root trax logger.
@@ -68,12 +69,12 @@ def configure_logging(
     # Default format
     if format_string is None:
         if level == DEBUG:
-            format_string = "[%(asctime)s] %(levelname)-8s %(name)s:%(lineno)d - %(message)s"
+            format_string = "[%(asctime)s]  %(levelname)-8s %(funcName)s - %(name)s:%(lineno)d - %(message)s"
         else:
             format_string = "[%(asctime)s] %(levelname)-8s %(message)s"
     
     formatter = logging.Formatter(format_string, datefmt=date_format)
-    
+
     # Console handler
     if console:
         console_handler = logging.StreamHandler(sys.stdout)
@@ -90,6 +91,14 @@ def configure_logging(
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
+    filter = logging.Filter()
+        
+    if focus_patterns:
+        focus_patterns = [''.join(pattern) for pattern in focus_patterns]
+        logic_check = any
+        print(f"Focus patterns: {focus_patterns}")
+        filter.filter = lambda record: logic_check(pattern in record.getMessage() for pattern in focus_patterns)
+        console_handler.addFilter(filter)
     
     return root_logger
 
