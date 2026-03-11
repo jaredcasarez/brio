@@ -1,4 +1,6 @@
-# trax [![Python](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/) [![Panda3D](https://img.shields.io/badge/Panda3D-1.10.9-blue)](https://www.panda3d.org/) ![GitHub Repo Size](https://img.shields.io/github/repo-size/jaredcasarez/trax) ![GitHub Last Commit](https://img.shields.io/github/last-commit/jaredcasarez/trax) ![GitHub](https://img.shields.io/github/license/jaredcasarez/trax)
+# *<p align="center"> trax </p>*
+
+# [![Python](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/) [![Panda3D](https://img.shields.io/badge/Panda3D-1.10.9-blue)](https://www.panda3d.org/) ![GitHub Repo Size](https://img.shields.io/github/repo-size/jaredcasarez/trax) ![GitHub Last Commit](https://img.shields.io/github/last-commit/jaredcasarez/trax) ![GitHub](https://img.shields.io/github/license/jaredcasarez/trax)
 
 A Python module for track design and management with 3D visualization, built with the <img alt="Panda3D" src="readme/panda3d_logo.png" width="20" height="20"> Panda3D Framework
 
@@ -32,11 +34,11 @@ brio/
 ├── assets/           # Track models, textures, fonts, icons
 │   └── models/
         ├── brio/         # Brio track pieces
-    │       ├── Straight/    # Straight track pieces
-    │       ├── Curved/      # Curved track pieces
-    │       ├── Elevated/    # Elevated/bridge tracks
-    │       ├── Crossing/    # Track crossings
-    │       └── Switches/    # Track switches
+        │   ├── Straight/    # Straight track pieces
+        │   ├── Curved/      # Curved track pieces
+        │   ├── Elevated/    # Elevated/bridge tracks
+        │   ├── Crossing/    # Track crossings
+        │   └── Switches/    # Track switches
         └── citystreets/     # City street pieces
             ├── Straight/    # Straight street pieces
             ├── Curved/      # Curved street pieces
@@ -55,7 +57,7 @@ pip install ./trax
 
 ## Usage
 
-In the terminal, run:
+In the terminal (in a new session, if just installed), run:
 ```bash
 trax
 ```

@@ -559,11 +559,11 @@ class FileSelector(DirectObject.DirectObject):
                 unparsed_state = json.load(f)
                 logger.info("Loaded state from: %s", filepath)
         except (json.JSONDecodeError, FileNotFoundError) as e:
-            logger.error(f"Failed to load file: {e}")
+            logger.info(f"Failed to load file: {e}")
             return
         
         if not unparsed_state:
-            logger.error("Failed to load state from file - empty or invalid")
+            logger.info("Failed to load state from file - empty or invalid")
             return
         
         # Handle both old format (list of tracks) and new format (dict with tracks and table)
