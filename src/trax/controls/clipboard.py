@@ -32,11 +32,14 @@ class Clipboard(DirectObject.DirectObject):
         """Copy selected tracks to clipboard"""
         self.tracks = []
         for track in list(self.window.selector.active_tracks):
+            track_pos = track.nodepath.getPos(self.window.selector.rbc_nodepath)
+            track_pos.setZ(track.nodepath.getPos(self.window.table.inf_plane_nodepath).getZ())
             track_info = {
                 "file": track.track_file,
-                "pos": track.nodepath.getPos(self.window.table.nodepath),
-                "hpr": track.nodepath.getHpr(self.window.table.nodepath),
-                "scale": track.nodepath.getScale(self.window.table.nodepath),
+                "pos": track_pos,
+                "hpr": track.nodepath.getHpr(self.window.selector.rbc_nodepath),
+                "scale": track.nodepath.getScale(self.window.selector.rbc_nodepath),
+                "type": track.track_type,
             }
             self.tracks.append(track_info)
         logger.info(f"Copied {len(self.tracks)} tracks to clipboard")
@@ -47,31 +50,33 @@ class Clipboard(DirectObject.DirectObject):
             logger.warning("Clipboard is empty")
             return
         logger.debug('pasting tracks: %s', self.tracks)
+        surfacepoint = Vec3(0, 0, 0)
         if self.window.mouseWatcherNode.hasMouse():
             mpos = self.window.mouseWatcherNode.getMouse()
             self.window.pickerRay.setFromLens(
                 self.window.camNode, mpos.getX(), mpos.getY()
             )
-            self.window.myTraverser.traverse(self.window.table.nodepath)
+            self.window.myTraverser.traverse(self.window.table.inf_plane_nodepath)
+            self.window.myHandler.sortEntries()
             if self.window.myHandler.getNumEntries() > 0:
-                self.window.myHandler.sortEntries()
-                entry = self.window.myHandler.getEntry(0)
-                surfacepoint = entry.getSurfacePoint(self.window.table.nodepath)
-        else:
-            surfacepoint = Vec3(0, 0, 0)
+                for entry in self.window.myHandler.getEntries():
+                    if entry.getIntoNode().hasTag('floor'):
+                        surfacepoint = entry.getSurfacePoint(self.window.table.inf_plane_nodepath)
             
         self.window.selector.resetSelection(message=False)
         
         for track_info in list(self.tracks):
+            new_pos = surfacepoint + track_info["pos"]
+            new_pos.setZ(track_info['pos'].getZ())
             new_track = Track(
                 self.window,
                 self.window.table.nodepath,
                 track_info["file"],
                 track_info["file"].split(".")[0],
-                pos=surfacepoint + track_info["pos"],
+                pos=new_pos,
                 hpr=track_info["hpr"],
                 scale=track_info["scale"],
-                track_tag="street" if self.window.mode == "street" else "track",
+                track_type=track_info["type"],
             )
             self.window.table.tracks.append(new_track)
             self.window.selector.select(new_track, message=False)
