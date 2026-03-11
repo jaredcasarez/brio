@@ -324,12 +324,12 @@ class TrackGallery:
     def setCategory(self, category):
         """Change the active category"""
         self.current_cat = category
-        self.previewBg['frameColor'] = Colors.categoryColors[category]
-        self.prevBtn['frameColor'] = Colors.categoryColors[category]
-        self.nextBtn['frameColor'] = Colors.categoryColors[category]
         self.currentTrack()
         self._updateThumbnails()
         self._updateLabels()
+        self.previewBg['frameColor'] = Colors.categoryColors[category]
+        self.prevBtn['frameColor'] = Colors.categoryColors[category]
+        self.nextBtn['frameColor'] = Colors.categoryColors[category]
     
     def _updateLabels(self):
         """Update track name and counter labels"""
@@ -445,6 +445,9 @@ class TrackGallery:
         """Jump to a specific track"""
         if track_file == getattr(self, "track_file", None):
             return
+        mode = "citystreets" if "citystreets" in track_file else "brio"
+        if self.window.mode != mode:
+            self.window.setMode(mode)
         for cat in self.track_cats:
             if track_file in self.track_files[cat]:
                 self.current_cat = cat
@@ -480,7 +483,6 @@ class TrackGallery:
         """Compatibility alias"""
         self._updateLabels()
     
-    def destroy(self):
-        """Clean up the gallery"""
-        self.frame.destroy()
-        self.event_handler.ignoreAll()
+    def reset(self):
+        """Reset gallery to initial state"""
+        self.currentTrack()

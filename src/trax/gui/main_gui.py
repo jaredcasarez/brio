@@ -60,15 +60,6 @@ class GUI:
         # Create status bar at bottom of screen
         self._createStatusBar()
         
-    
-    def reset(self):
-        """Reset the GUI to initial state (e.g. after mode switch)"""
-        self.sidebar.destroy()
-        self.sidebar_border.destroy()
-        self.preview.destroy()
-        self.properties_panel.destroy()
-        self.__init__(self.window)
-        
     def _createToolbar(self):
         """Create the toolbar with file operation buttons"""
         toolbar_y = 1 - self.toolbar_height / 2

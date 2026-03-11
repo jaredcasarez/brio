@@ -205,9 +205,13 @@ class SandboxApp(ShowBase):
             return  # No change
         self.mode = mode
         Assets.set_mode(mode)
-        self.gui.reset()
-        
-    
+        self.preview.track_cats = Assets.get_track_categories()
+        self.preview.track_files = Assets.get_all_track_files()
+        self.preview.current_cat = "Straight"
+        self.preview.cat_indices = {cat: 0 for cat in self.preview.track_cats}
+        self.preview._updateThumbnails()
+        self.gui.properties_panel.updateModeButtons()
+
     @property
     def mode(self):
         return Assets._mode

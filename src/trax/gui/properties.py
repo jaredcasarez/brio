@@ -98,17 +98,28 @@ class PropertiesPanel:
         # Initialize button states after all widgets are created
         # self.updateModeButtons()
     
+    def updateModeButtons(self):
+        """Update the appearance of mode buttons based on current mode"""
+        if self.window.mode == 'brio':
+            self.brio_mode_button['image'] = self.brio_active
+            self.street_mode_button['image'] = self.citystreets_inactive
+        else:
+            self.brio_mode_button['image'] = self.brio_inactive
+            self.street_mode_button['image'] = self.citystreets_active
+
     def _setMode(self, mode):
         """Set the application mode and update button states"""
         if self.window.mode != mode:
             self.window.setMode(mode)
-            # self.updateModeButtons()
+            self.updateModeButtons()
     
     def _switchMode(self):
         if self.window.mode == 'brio':
             self.window.setMode('citystreets')
         else:
             self.window.setMode('brio')
+        self.updateModeButtons()
+            
     def _onModeButtonEnter(self, button, mode):
         """Highlight mode button on hover"""
         # if self.window.mode != mode:
