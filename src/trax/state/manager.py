@@ -16,9 +16,16 @@ class StateManager(DirectObject.DirectObject):
         self.current_state = []
         self.undo_stack = []
         self.redo_stack = []
-        self.accept("state change", self.storeState)
-        self.accept("control-z", self.undo)
-        self.accept("control-y", self.redo)
+        self.command_lookup={'control_z':self.undo, 'control_y':self.redo}
+        self.accept('keystroke', self.onKeypress)
+        self.accept('state change', self.storeState)
+
+    def onKeypress(self, key):
+        if self.window.mouseWatcherNode.is_button_down('control') or self.window.mouseWatcherNode.is_button_down('meta'):
+            key=f"control_{key}"
+        print(key)
+        if key in self.command_lookup:
+            self.command_lookup[key]()
 
     def printState(self, state, label="State"):
         """Debug print of a state"""
