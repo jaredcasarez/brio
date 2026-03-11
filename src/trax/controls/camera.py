@@ -29,14 +29,28 @@ class CameraControl(DirectObject.DirectObject):
         self.updateCamera()
         
         # Key bindings
-        self.accept("a-repeat", self.moveLeft)
-        self.accept("d-repeat", self.moveRight)
-        self.accept("wheel_up", self.moveIn)
-        self.accept("wheel_down", self.moveOut)
-        self.accept("w-repeat", self.moveUp)
-        self.accept("s-repeat", self.moveDown)
-        self.accept("p", self.lightToggle)
-
+        self.accept('keystroke', self.onKeypress)
+        self.command_lookup = {"wheel_up": self.moveIn, "control_wheel_up":self.moveUp, "shift_wheel_up":self.moveRight, "wheel_down": self.moveOut, "control_wheel_down": self.moveDown, "shift_wheel_down":self.moveLeft,"wheel_right":self.moveRight, "wheel_left":self.moveLeft, "p": self.lightToggle}
+        self.last_press = None
+    def onKeypress(self,key):
+        
+        if self.window.mouseWatcherNode.is_button_down('shift'):
+            key=f"shift_{key}"
+        if self.window.mouseWatcherNode.is_button_down('control') or self.window.mouseWatcherNode.is_button_down('meta'):
+            key = f"control_{key}"
+        if key in self.command_lookup and self.last_press == key:
+            self.command_lookup[key]()
+        self.last_press=key
+    def onScrollUp(self):
+        if self.window.mouseWatcherNode.is_button_down('s'):
+            self.moveLeft()
+        else:
+            self.moveIn()
+    def onScrollDown(self):
+        if self.window.mouseWatcherNode.is_button_down('shift'):
+            self.moveRight()
+        else:
+            self.moveOut()
     def updateCamera(self):
         """Convert spherical to cartesian coordinates and update camera"""
         x = (

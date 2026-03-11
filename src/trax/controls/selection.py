@@ -24,28 +24,42 @@ class SelectionControl(DirectObject.DirectObject):
         self.angle_tolerance = 91
         
         # Key bindings
-        self.accept("control-a", self.selectAll)
-        self.accept("control-shift-a", self.resetSelection)
-        self.accept("control-mouse1", self.handleClick, extraArgs=['multiselect'])
-        self.accept("mouse1", self.handleClick, extraArgs=['normal'])
-        self.accept("shift-mouse1", self.handleClick, extraArgs=['connections'])
-        self.accept("z", self.dragStart)
-        self.accept("q", self.animate, extraArgs=[self.rotateTrack, 90])
-        self.accept("shift-q", self.animate, extraArgs=[self.rotateTrack, 15])
-        self.accept("e", self.animate, extraArgs=[self.rotateTrack, -90])
-        self.accept("shift-e", self.animate, extraArgs=[self.rotateTrack, -15])
-        self.accept("escape", self.resetSelection)
-        self.accept("backspace", self.deleteSelection)
-        self.accept("r", self.animate, extraArgs=[self.raiseTrack, 50])
-        self.accept("f", self.animate, extraArgs=[self.raiseTrack, -50])
-        self.accept("shift-r", self.animate, extraArgs=[self.raiseTrack, 1])
-        self.accept("shift-f", self.animate, extraArgs=[self.raiseTrack, -1])
-        self.accept("x", self.animate, extraArgs=[self.flipTrack, 180])
-        
+        self.command_lookup = {'control_a': self.selectAll, 
+                        'control_shift_a': self.resetSelection,
+                        'control_mouse1': lambda: self.handleClick("multiselect"),
+                        'mouse1': lambda: self.handleClick("normal"),
+                        'shift_mouse1': lambda: self.handleClick("connections"),
+                        'z': self.dragStart,
+                        'shift_z': lambda: self.drag(False),
+                        'q': lambda: self.animate(self.rotateTrack, 90),
+                        'shift_q': lambda: self.animate(self.rotateTrack, 15),
+                        'e': lambda: self.animate(self.rotateTrack, -90),
+                        'shift_e': lambda: self.animate(self.rotateTrack, -15),
+                        'escape': self.resetSelection,
+                        'backspace': self.deleteSelection,
+                        'r': lambda: self.animate(self.raiseTrack, 50),
+                        'f': lambda: self.animate(self.raiseTrack, -50),
+                        'shift_r': lambda: self.animate(self.raiseTrack, 1),
+                        'shift_f': lambda: self.animate(self.raiseTrack, -1),
+                        'x': lambda: self.animate(self.flipTrack, 180),
+                        }
+       
+        self.accept('keystroke', self.onKeypress)
         self.selection = None
         self.rbc = None
         self.rbc_nodepath = None
 
+    def onKeypress(self, key):
+        """Handle keypress events for selection control"""
+        if self.window.mouseWatcherNode.is_button_down('shift'):
+            key = f"shift_{key}"
+        if self.window.mouseWatcherNode.is_button_down('control') or self.window.mouseWatcherNode.is_button_down('meta'):
+            key= f"control_{key}"
+        if key in self.command_lookup:
+            self.command_lookup[key]()
+        else:
+            logger.debug(f"No command bound to key: {key}")
+            
     def selectAll(self):
         """Select all tracks on the table"""
         self.resetSelection(message=False)

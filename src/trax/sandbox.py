@@ -16,6 +16,7 @@ from panda3d.core import (
     AntialiasAttrib,
     WindowProperties,
     Material,
+    ModifierButtons,   
 )
 import simplepbr
 
@@ -75,6 +76,11 @@ class SandboxApp(ShowBase):
             use_emission_maps=False,
         )
         ShowBase.disableMouse(self)
+        
+        # Set up key event handling
+        self.mouseWatcherNode.set_modifier_buttons(ModifierButtons())
+        self.buttonThrowers[0].node().set_modifier_buttons(ModifierButtons())
+        self.buttonThrowers[0].node().setButtonDownEvent('keystroke')
         
         # Set warm background color
         self.setBackgroundColor(self.backgroundColor)
@@ -170,13 +176,13 @@ class SandboxApp(ShowBase):
         self.units = []
 
     def toggleMode(self):
-        """Toggle between 'brio' and 'street' modes"""
+        """Toggle between 'brio' and 'citystreets' modes"""
         current_mode = self.mode
         new_mode = 'citystreets' if current_mode == 'brio' else 'brio'
         self.setMode(new_mode)
 
     def setMode(self, mode):
-        """Switch between 'brio' and 'street' modes"""
+        """Switch between 'brio' and 'citystreets' modes"""
         if mode == self.mode:
             return  # No change
         self.mode = mode

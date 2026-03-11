@@ -17,9 +17,17 @@ class Clipboard(DirectObject.DirectObject):
     def __init__(self, window):
         self.window = window
         self.tracks = []
-        self.accept("control-c", self.copySelection)
-        self.accept("control-v", self.pasteSelection)
+        self.accept('keystroke', self.onKeypress)
+        self.command_lookup = {"control_c": self.copySelection, "control_v": self.pasteSelection}
 
+    def onKeypress(self, key):
+        """Handle keypress events for clipboard control"""
+        if self.window.mouseWatcherNode.is_button_down('shift'):
+            key = f"shift_{key}"
+        if self.window.mouseWatcherNode.is_button_down('control') or self.window.mouseWatcherNode.is_button_down('meta'):
+            key = f"control_{key}"
+        if key in self.command_lookup:
+            self.command_lookup[key]()
     def copySelection(self):
         """Copy selected tracks to clipboard"""
         self.tracks = []
