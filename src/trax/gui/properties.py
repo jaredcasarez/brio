@@ -20,8 +20,8 @@ class PropertiesPanel:
         self.window = window
         self.frame = DirectFrame(
             parent=parent,
-            frameColor=Colors.panelColor,
-            frameSize=(0.01, 0.44, -1.1, -0.2),
+            frameColor=(0,0,0,0),
+            frameSize=(0.01, 0.44, -1.1, -0.7),
             pos=(0, 0, -0.1),
             relief=DGG.FLAT,
         )
@@ -34,10 +34,10 @@ class PropertiesPanel:
         
         self.brio_mode_button = DirectButton(
             parent=self.frame,
-            image=self.brio_inactive,
-            image_scale=0.07,
+            image=self.brio_inactive if self.window.mode!='brio' else self.brio_active,
+            image_scale=0.085,
             frameColor=(0, 0, 0, 0),
-            pos=(0.125, 0, -0.8),
+            pos=(0.11125, 0, -0.735),
             relief=DGG.FLAT,
             command=self._setMode,
             extraArgs=['brio'],
@@ -47,10 +47,10 @@ class PropertiesPanel:
         
         self.street_mode_button = DirectButton(
             parent=self.frame,
-            image=self.citystreets_inactive,
-            image_scale=0.07,
+            image=self.citystreets_inactive if self.window.mode!='citystreets' else self.citystreets_active,
+            image_scale=0.085,
             frameColor=(0, 0, 0, 0),
-            pos=(0.32, 0, -0.80),
+            pos=(0.32, 0, -0.75),
             relief=DGG.FLAT,
             command=self._setMode,
             extraArgs=['citystreets'],
@@ -72,57 +72,71 @@ class PropertiesPanel:
             Colors.textColor[2] * 0.4,
             Colors.textColor[3],
         )
-        
+        self.citystreets_label = DirectLabel(
+            parent=self.frame,
+            text="CityStreets",
+            text_font=self.window.font,
+            text_scale=0.03,
+            text_fg=Colors.textColor,
+            text_align=TextNode.ALeft,
+            pos=(0.24, 0, -0.875),
+            frameColor=(0, 0, 0, 0),
+        )
+        self.tracks_label = DirectLabel(
+            parent=self.frame,
+            text="Brio",
+            text_font=self.window.font,
+            text_scale=0.03,
+            text_fg=Colors.textColor,
+            text_align=TextNode.ALeft,
+            pos=(0.0775, 0, -0.875),
+            frameColor=(0, 0, 0, 0),
+        )
+    
         self.makePropertiesTable()
-        
+        self.window.accept('tab', self._switchMode)
         # Initialize button states after all widgets are created
-        self.updateModeButtons()
+        # self.updateModeButtons()
     
     def _setMode(self, mode):
         """Set the application mode and update button states"""
-        self.window.setMode(mode)
-        self.updateModeButtons()
+        if self.window.mode != mode:
+            self.window.setMode(mode)
+            # self.updateModeButtons()
     
+    def _switchMode(self):
+        if self.window.mode == 'brio':
+            self.window.setMode('citystreets')
+        else:
+            self.window.setMode('brio')
     def _onModeButtonEnter(self, button, mode):
         """Highlight mode button on hover"""
         # if self.window.mode != mode:
-        button['image_scale'] = 0.08
+        button['image_scale'] = 0.11
         button.setColorScale(1.3, 1.3, 1.3, 1)
     
     def _onModeButtonExit(self, button, mode):
         """Reset mode button color on hover exit"""
         # if self.window.mode != mode:
-        button['image_scale'] = 0.07
+        button['image_scale'] = 0.085
         button.setColorScale(1, 1, 1, 1)
 
-    def updateModeButtons(self):
-        """Update mode button colors based on current mode"""
-        try:
-            if self.window.mode == 'brio':
-                self.brio_mode_button.setImage(self.brio_active)
-                self.street_mode_button.setImage(self.citystreets_inactive)
-            else:
-                self.street_mode_button.setImage(self.citystreets_active)
-                self.brio_mode_button.setImage(self.brio_inactive)
-        except Exception as e:
-            logger.error("Error updating mode buttons: %s", e)
-    
     def makePropertiesTable(self):
         """Create the properties table with sliders"""
         # Main container frame for all sliders
         self.sliders_container = DirectFrame(
             parent=self.frame,
             frameColor=(0, 0, 0, 0),
-            frameSize=(0.02, 0.4, -0.7, 0),
-            pos=(0.035, 0, -0.3),
+            frameSize=(0.02, 0.78, -0.7, 0),
+            pos=(0.475, 0, -0.55),
             relief=DGG.FLAT,
         )
         
         self.width_frame_border = DirectFrame(
             parent=self.sliders_container,
             frameColor=Colors.panelBorderColor,
-            frameSize=(-0.005, 0.385, -0.265, -0.135),
-            pos=(0, 0, 0),
+            frameSize=(0.005, 0.385, -0.265, -0.135),
+            pos=(0.35, 0, -0.025),
         )
         
         # Width slider frame
@@ -161,8 +175,8 @@ class PropertiesPanel:
         self.length_frame_border = DirectFrame(
             parent=self.sliders_container,
             frameColor=Colors.panelBorderColor,
-            frameSize=(-0.005, 0.385, -0.265, -0.135),
-            pos=(0, 0, -0.15),
+            frameSize=(0.005, 0.38, -0.265, -0.135),
+            pos=(-0.025, 0, -0.025),
         )
         self.length_frame = DirectFrame(
             parent=self.length_frame_border,

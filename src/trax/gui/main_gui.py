@@ -60,8 +60,6 @@ class GUI:
         # Create status bar at bottom of screen
         self._createStatusBar()
         
-        # Start status update task
-        self.window.taskMgr.add(self._updateStatus, "updateStatusTask")
     
     def reset(self):
         """Reset the GUI to initial state (e.g. after mode switch)"""
@@ -197,17 +195,6 @@ class GUI:
         )
         self.statusbar.reparentTo(self.window.a2dBottomCenter)
         
-        # Selection info (left)
-        self.selection_label = DirectLabel(
-            parent=self.statusbar,
-            text="No selection",
-            text_font=self.window.font,
-            text_scale=0.032,
-            text_fg=Colors.textLightColor,
-            text_align=TextNode.ALeft,
-            pos=(-1.7, 0, 0.02),
-            frameColor=todecimal(rgba(0, 0, 0, 0)),
-        )
         
         # Current track info (center)
         self.track_label = DirectLabel(
@@ -217,14 +204,14 @@ class GUI:
             text_scale=0.028,
             text_fg=todecimal(rgba(180, 180, 180, 1)),
             text_align=TextNode.ACenter,
-            pos=(0, 0, 0.02),
+            pos=(-0.5, 0, 0.02),
             frameColor=todecimal(rgba(0, 0, 0, 0)),
         )
         
         # Keyboard hints (right)
         self.hints_label = DirectLabel(
             parent=self.statusbar,
-            text="[Enter] Place    [Z] Drag    [Q/E] Rotate    [R/F] Raise/Lower    [X] Flip   [Shift] Modifier key    [WASD] Move camera",
+            text="[Enter] Place    [Z] Drag    [Q/E] Rotate    [R/F] Raise/Lower    [X] Flip   [Shift] Modifier key  [(Shift/Cmd) Scroll] Move camera",
             text_font=self.window.font,
             text_scale=0.025,
             text_fg=todecimal(rgba(140, 140, 140, 1)),
@@ -232,15 +219,3 @@ class GUI:
             pos=(1.7, 0, 0.02),
             frameColor=todecimal(rgba(0, 0, 0, 0)),
         )
-    
-    def _updateStatus(self, task):
-        """Update status bar information"""
-        num_selected = len(self.window.selector.active_tracks)
-        total_tracks = len(self.window.table.tracks)
-        
-        if num_selected == 0:
-            self.selection_label['text'] = f"Tracks: {total_tracks}"
-        else:
-            self.selection_label['text'] = f"Selected: {num_selected} / {total_tracks}"
-        
-        return task.cont

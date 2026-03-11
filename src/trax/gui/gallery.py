@@ -41,7 +41,7 @@ class TrackGallery:
         self.preview_height = 0.35
         self.thumbnail_size = 0.12
         self.thumbnails_per_row = 3
-        self.thumbnails_per_column = 3
+        self.thumbnails_per_column = 8
         
         # Main frame for the gallery
         self.frame = DirectFrame(
@@ -77,7 +77,6 @@ class TrackGallery:
         while self.busy:
             pass
         self.window.taskMgr.add(self.spinTrack, "spinTrackTask")
-        self._preloadTracks()
         self._updateThumbnails()
         
     def _createFeaturedPreview(self):
@@ -195,6 +194,8 @@ class TrackGallery:
         for row in range(self.thumbnails_per_column):
             for col in range(self.thumbnails_per_row):
                 idx = row * self.thumbnails_per_row + col
+                if idx >= len(self.track_files[self.current_cat]):
+                    break
                 x = 0.02 + col * (self.thumbnail_size + 0.02 if col > 0 else 0)
                 y = -0.02 - row * (self.thumbnail_size + 0.02)
                 
@@ -235,7 +236,7 @@ class TrackGallery:
             frameSize=(-0.025, 0.025, -0.035, 0.035),
             frameColor=Colors.categoryColors[self.current_cat],
             pos=(0.03, 0, nav_y),
-            command=self.prevTrack,
+            command=self.prevCategory,
             relief=DGG.FLAT,
         )
         
@@ -249,7 +250,7 @@ class TrackGallery:
             frameSize=(-0.025, 0.025, -0.035, 0.035),
             frameColor=Colors.categoryColors[self.current_cat],
             pos=(self.gallery_width - 0.03, 0, nav_y),
-            command=self.nextTrack,
+            command=self.nextCategory,
             relief=DGG.FLAT,
         )
     
@@ -263,9 +264,12 @@ class TrackGallery:
     
     def _updateThumbnails(self):
         """Update thumbnail highlights and load track previews"""
+        if self.thumbnailFrame:
+            self.thumbnailFrame.destroy()
+            self.thumbnailFrame=None
         tracks = self.track_files[self.current_cat]
         current_idx = self.cat_indices[self.current_cat]
-        
+        self._createThumbnailGrid()
         # Clear existing thumbnail track models
         for np in self.thumbnail_tracks_np:
             if np is not None:
@@ -316,8 +320,6 @@ class TrackGallery:
                         track_np.removeNode()
                 except Exception as e:
                     logger.warning(f"Could not load thumbnail for {tracks[i]}: {e}")
-            else:
-                btn['frameColor'] = Colors.emptyButtonColor
     
     def setCategory(self, category):
         """Change the active category"""
@@ -447,13 +449,14 @@ class TrackGallery:
             if track_file in self.track_files[cat]:
                 self.current_cat = cat
                 self.cat_indices[self.current_cat] = self.track_files[cat].index(track_file)
+                self.setCategory(self.current_cat)
                 self.stop_event = self.sendForGeneration(track_file)
                 self.track_file = track_file
                 self._updateThumbnails()
                 if hasattr(self.window, 'gui'):
                     self.window.gui._highlightCategory(cat)
                 break
-    
+
     def placeTrack(self, message=True):
         """Place the current track on the table"""
         track_files = self.track_files[self.current_cat]
@@ -464,7 +467,7 @@ class TrackGallery:
             self.window.table.nodepath,
             track_files[self.cat_indices[self.current_cat]],
             self.track_file.split(".")[0],
-            track_tag="street" if self.window.mode == "street" else "track",
+            track_type="citystreets" if self.window.mode == "citystreets" else "brio",
         )
         new_track.tracknodepath.setShaderAuto()
         self.window.table.tracks.append(new_track)
