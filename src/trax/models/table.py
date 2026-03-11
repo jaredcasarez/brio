@@ -6,6 +6,13 @@ from panda3d.core import (
     NodePath,
     LineSegs,
     CardMaker,
+    CollisionNode,
+    CollisionPlane,
+    BitMask32,
+    Plane,
+    Point3,
+    Vec3,
+    GeomNode,
 )
 from ..constants import Colors
 from ..logging import get_logger
@@ -27,6 +34,22 @@ class Table:
 
         self.setUpTablePlane()
         self.setUpTableGrid()
+        self.setUpInfPlane()
+    
+    def setUpInfPlane(self):
+        """Set up an invisible infinite plane for mouse ray collision picking"""
+        # Create a collision plane facing up (normal = +Z)
+        collision_plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0)))
+        
+        # Create a collision node and add the plane to it
+        self.inf_plane_node = CollisionNode("inf_plane")
+        self.inf_plane_node.addSolid(collision_plane)
+        
+        # Set collision masks - this plane can be collided INTO by rays
+        self.inf_plane_node.setIntoCollideMask(GeomNode.getDefaultCollideMask())
+        
+        self.inf_plane_nodepath = self.nodepath.attachNewNode(self.inf_plane_node)
+        self.inf_plane_nodepath.setTag('floor', 'ground')
 
     def setUpTablePlane(self, redraw=False):
         """Create or redraw the table surface plane"""

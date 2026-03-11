@@ -15,7 +15,7 @@ class Track:
     """Represents a single track piece in the scene"""
     
     def __init__(
-        self, window, parent, track_file, track_tag_name, track_tag="track", **kwargs
+        self, window, parent, track_file, track_tag_name, track_tag="track", track_type='brio', **kwargs
     ):
         self.connections = {'male': [], 'female': []}
         self.window = window
@@ -31,7 +31,7 @@ class Track:
         )
         self.z_offset = self.tracknodepath.getPos().z - self.tracknodepath.getTightBounds()[0].z
         self.nodepath = parent.attachNewNode("pivot")
-        
+        self.track_type = track_type
         self.tracknodepath.setName(track_tag_name)
         self.tracknodepath.setDepthOffset(1)
         tss = self.tracknodepath.findAllTextureStages()
@@ -69,7 +69,8 @@ class Track:
                     else:
                         child.node().setIntoCollideMask(BitMask32.bit(2))
                         child.node().setFromCollideMask(BitMask32.bit(1))
-        self.tracknodepath.wrtReparentTo(self.nodepath)
+        
+        self.tracknodepath.reparentTo(self.nodepath)
         self.tracknodepath.setPos(self.center_offset.x, self.center_offset.y, self.z_offset)
         
     def removeNode(self):

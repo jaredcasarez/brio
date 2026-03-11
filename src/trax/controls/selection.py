@@ -121,7 +121,7 @@ class SelectionControl(DirectObject.DirectObject):
                 pickedObj = entry.getIntoNodePath()
                 track = pickedObj.findNetTag("track")
                 if track.isEmpty():
-                    track = pickedObj.findNetTag("street")
+                    track = pickedObj.findNetTag("citystreets")
                 if not track.isEmpty():
                     track = self.findTrackByNodePath(track)
                     return track
@@ -133,15 +133,15 @@ class SelectionControl(DirectObject.DirectObject):
         if track:
             self.window.preview.specifyTrack(track.track_file)
             surfacepoint = self.window.myHandler.getEntry(0).getSurfacePoint(
-                self.window.table.nodepath
+                self.window.table.inf_plane_nodepath
             )
             track_origin = track.nodepath.getPos(self.window.table.nodepath)
             offset = surfacepoint - track_origin
-            
+
             if track in list(self.active_tracks):
-                if mode == 'connections':
+                if mode == "connections":
                     connected_tracks = self.getConnectedTracks(track)
-                    logger.debug('connected_tracks: %s', connected_tracks)
+                    logger.debug("connected_tracks: %s", connected_tracks)
                     for connected_track in list(connected_tracks):
                         if connected_track in list(self.active_tracks):
                             self.deselect(connected_track, rbc_refresh=False)
@@ -149,18 +149,18 @@ class SelectionControl(DirectObject.DirectObject):
                 else:
                     self.deselect(track)
             else:
-                if mode == 'connections':
+                if mode == "connections":
                     connected_tracks = self.getConnectedTracks(track)
-                    logger.debug('connected_tracks: %s', connected_tracks)
+                    logger.debug("connected_tracks: %s", connected_tracks)
                     for connected_track in list(connected_tracks):
                         if connected_track not in list(self.active_tracks):
                             self.select(connected_track, rbc_refresh=False)
                     self.makeCombinedNode()
                 else:
-                    if mode != 'multiselect':
+                    if mode != "multiselect":
                         self.resetSelection(message=False)
                     self.select(track)
-                    if self.window.mode not in track.track_file.split('assets')[-1]:
+                    if self.window.mode != track.track_type:
                         self.window.toggleMode()
                     self.window.gui.preview.specifyTrack(track.track_file)
         elif mode not in ["multiselect", "connections"]:
@@ -179,46 +179,74 @@ class SelectionControl(DirectObject.DirectObject):
     def dragStart(self):
         """Begin dragging the selection"""
         if self.selection:
-            if self.window.myHandler.getNumEntries() > 0:
-                surfacepoint = self.window.myHandler.getEntry(0).getSurfacePoint(
-                    self.window.table.nodepath
+            self.makeCombinedNode()
+            if (
+                self.window.mouseWatcherNode.hasMouse()
+                and self.window.mouseWatcherNode.is_button_down("z")
+            ):
+                mpos = self.window.mouseWatcherNode.getMouse()
+                self.window.pickerRay.setFromLens(
+                    self.window.camNode, mpos.getX(), mpos.getY()
                 )
-                self.drag_offset = surfacepoint - self.selection.getPos(
-                    self.window.table.nodepath
-                )
-                self.window.taskMgr.add(self.dragTask, "dragTask", appendTask=True)
-                self.window.myHandler.clearEntries()
+                self.window.myTraverser.traverse(self.window.table.inf_plane_nodepath)
+                if (
+                    self.window.myHandler.getNumEntries() > 0
+                    and self.window.myHandler.getEntry(0)
+                    .getIntoNodePath()
+                    .hasNetTag("floor")
+                ):
+                    surfacepoint = self.window.myHandler.getEntry(0).getSurfacePoint(
+                        self.window.table.inf_plane_nodepath
+                    )
+                    self.drag_offset = surfacepoint - self.selection.getPos(
+                        self.window.table.inf_plane_nodepath
+                    )
+                    self.last_mouse_pos = surfacepoint
+                    self.window.myHandler.clearEntries()
+                    self.window.taskMgr.add(self.dragTask, "dragTask", appendTask=True)
 
-    def dragTask(self, task):
-        """Task for dragging selection with mouse"""
-        if not self.selection:
-            self.window.taskMgr.remove("dragTask")
-            return task.done
-            
-        z = self.selection.getZ()
-        if self.window.mouseWatcherNode.hasMouse():
+            else:
+                logger.warning("No collision entry found for dragging")
+        else:
+            logger.warning("No selection to drag")
+    def mouseTraverse(self):
+        if self.window.mouseWatcherNode.hasMouse() and self.selection:
             mpos = self.window.mouseWatcherNode.getMouse()
             self.window.pickerRay.setFromLens(
                 self.window.camNode, mpos.getX(), mpos.getY()
             )
-            self.window.myTraverser.traverse(self.window.table.nodepath)
-            
-            if self.window.myHandler.getNumEntries() > 0 and any(
-                self.window.myHandler.getEntry(i).getIntoNodePath().hasNetTag("floor")
-                for i in range(self.window.myHandler.getNumEntries())
-            ):
-                for entry in [
-                    self.window.myHandler.getEntry(i)
-                    for i in range(self.window.myHandler.getNumEntries())
-                ]:
-                    if entry.getIntoNodePath().hasNetTag("floor"):
-                        new_pos = entry.getSurfacePoint(self.window.table.nodepath)
+            self.window.myTraverser.traverse(self.window.table.inf_plane_nodepath)
+            return True
+        return False
+    def drag(self, use_last_mouse_pos=True):
+        if use_last_mouse_pos:
+            offset = self.last_mouse_pos
+        else:
+            offset = self.selection.getPos(self.window.table.inf_plane_nodepath)
+        if self.mouseTraverse():
+            if self.window.myHandler.getNumEntries() > 0 and self.window.mouseWatcherNode.is_button_down("z"):
+                entry = self.window.myHandler.getEntry(0)
+                if entry.getIntoNodePath().hasNetTag("floor"):
+                    new_pos = entry.getSurfacePoint(
+                        self.window.table.inf_plane_nodepath
+                    )
+                x_delta = new_pos.getX() - offset.getX()
+                y_delta = new_pos.getY() - offset.getY()
+                track_pos = self.selection.getPos(self.window.table.inf_plane_nodepath)
+                self.selection.setPos(
+                    self.window.table.inf_plane_nodepath,
+                    track_pos.getX() + x_delta,
+                    track_pos.getY() + y_delta,
+                    track_pos.getZ(),
+                )
+                self.last_mouse_pos = new_pos
+                self.window.myHandler.clearEntries()
+                return True
+        else: return False
+    def dragTask(self, task):
+        """Task for dragging selection with mouse"""
 
-                x = new_pos.getX() - self.drag_offset.getX()
-                y = new_pos.getY() - self.drag_offset.getY()
-                self.selection.setPos(self.window.table.nodepath, x, y, z)
-                
-        if not self.window.mouseWatcherNode.is_button_down("z"):
+        if not self.drag():
             self.window.taskMgr.remove("dragTask")
             self.onCollision()
             self.window.messenger.send("state change")
@@ -229,10 +257,10 @@ class SelectionControl(DirectObject.DirectObject):
 
     def dissolveCombinedNode(self):
         """Break apart the combined selection node"""
-        logger.debug('dissolving combined node')
+        logger.debug("dissolving combined node")
         if self.rbc_nodepath:
             for track in list(self.active_tracks):
-                logger.debug('reparenting track: %s', track)
+                logger.debug("reparenting track: %s", track)
                 track.nodepath.wrtReparentTo(self.window.table.nodepath)
             self.rbc_nodepath.removeNode()
             self.rbc_subnodepath.removeNode()
@@ -246,57 +274,89 @@ class SelectionControl(DirectObject.DirectObject):
         if self.window.trackHandler.getNumEntries() > 0:
             self.window.trackHandler.sortEntries()
         for entry in self.window.trackHandler.getEntries():
-            logger.debug('Collision detected between: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
-            both_tagged = (
-                entry.getFromNodePath().getParent().hasNetTag("track") and 
-                entry.getIntoNodePath().getParent().hasNetTag("track")
-            ) or (
-                entry.getFromNodePath().getParent().hasNetTag("street") and
-                entry.getIntoNodePath().getParent().hasNetTag("street")
+            logger.debug(
+                "Collision detected between: %s and %s",
+                entry.getFromNodePath(),
+                entry.getIntoNodePath(),
             )
-            special_case = ((entry.getFromNodePath().getParent().hasNetTag("track") and entry.getIntoNodePath().getParent().hasNetTag("street")) or (entry.getFromNodePath().getParent().hasNetTag("street") and entry.getIntoNodePath().getParent().hasNetTag("track"))) and ('rail' in self.findTrackByNodePath(entry.getFromNodePath().getParent()).name or 'rail' in self.findTrackByNodePath(entry.getIntoNodePath().getParent()).name)
-            if not both_tagged and not special_case:   
-                logger.debug('Skipping entry without track tags: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
+            both_tagged = (
+                entry.getFromNodePath().getParent().hasNetTag("track")
+                and entry.getIntoNodePath().getParent().hasNetTag("track")
+            ) or (
+                entry.getFromNodePath().getParent().hasNetTag("citystreets")
+                and entry.getIntoNodePath().getParent().hasNetTag("citystreets")
+            )
+            special_case = (
+                (
+                    entry.getFromNodePath().getParent().hasNetTag("track")
+                    and entry.getIntoNodePath().getParent().hasNetTag("citystreets")
+                )
+                or (
+                    entry.getFromNodePath().getParent().hasNetTag("citystreets")
+                    and entry.getIntoNodePath().getParent().hasNetTag("track")
+                )
+            ) and (
+                "rail"
+                in self.findTrackByNodePath(entry.getFromNodePath().getParent()).name
+                or "rail"
+                in self.findTrackByNodePath(entry.getIntoNodePath().getParent()).name
+            )
+            if not both_tagged and not special_case:
+                logger.debug(
+                    "Skipping entry without track tags: %s and %s",
+                    entry.getFromNodePath(),
+                    entry.getIntoNodePath(),
+                )
                 continue
             track_entries.append(entry)
         return track_entries
-    
+
     def getConnectedTracks(self, track, tracks_to_check=None, connected_tracks=None):
         """Find all tracks connected to the given track through connections"""
         if connected_tracks is None:
             connected_tracks = []
         if tracks_to_check is None:
             tracks_to_check = list(self.window.table.tracks)
-        
+
         if track in connected_tracks:
             return connected_tracks
-        
+
         connected_tracks.append(track)
         self.window.trackTraverser.traverse(self.window.table.nodepath)
-        
+
         if self.window.trackHandler.getNumEntries() > 0:
             self.window.trackHandler.sortEntries()
             for entry in self.window.trackHandler.getEntries():
-                from_track = self.findTrackByNodePath(entry.getFromNodePath().getParent())
-                into_track = self.findTrackByNodePath(entry.getIntoNodePath().getParent())
-                
+                from_track = self.findTrackByNodePath(
+                    entry.getFromNodePath().getParent()
+                )
+                into_track = self.findTrackByNodePath(
+                    entry.getIntoNodePath().getParent()
+                )
+
                 if from_track == track:
                     if into_track not in connected_tracks:
-                        self.getConnectedTracks(into_track, tracks_to_check, connected_tracks)
+                        self.getConnectedTracks(
+                            into_track, tracks_to_check, connected_tracks
+                        )
                 elif into_track == track:
                     if from_track not in connected_tracks:
-                        self.getConnectedTracks(from_track, tracks_to_check, connected_tracks)
-        
+                        self.getConnectedTracks(
+                            from_track, tracks_to_check, connected_tracks
+                        )
+
         self.window.trackHandler.clearEntries()
-        return connected_tracks   
-    
+        return connected_tracks
+
     def onCollision(self, entries=None):
         """Handle track connection/snapping on collision"""
         if entries is None:
-            entries = self.traverseConnectedTracks(
-                list(self.active_tracks)[0]
-            ) if list(self.active_tracks) else []
-            
+            entries = (
+                self.traverseConnectedTracks(list(self.active_tracks)[0])
+                if list(self.active_tracks)
+                else []
+            )
+
         for entry in entries:
             from_active = self.findTrackByNodePath(
                 entry.getFromNodePath().getParent()
@@ -304,37 +364,55 @@ class SelectionControl(DirectObject.DirectObject):
             into_active = self.findTrackByNodePath(
                 entry.getIntoNodePath().getParent()
             ) in list(self.active_tracks)
-            
+
             if entry.getFromNodePath().getPos() == entry.getIntoNodePath().getPos():
-                logger.debug('already aligned: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
+                logger.debug(
+                    "already aligned: %s and %s",
+                    entry.getFromNodePath(),
+                    entry.getIntoNodePath(),
+                )
                 continue
-                
-            if (from_active != into_active):
+
+            if from_active != into_active:
                 moving_plane, stable_plane = self.getCollisionPlanes(entry)
                 if moving_plane and stable_plane:
                     moving_plane_pos = moving_plane.getPos(self.window.table.nodepath)
                     stable_plane_pos = stable_plane.getPos(self.window.table.nodepath)
                     distance = (moving_plane_pos - stable_plane_pos).length()
                     angle_diff = self.getAngleDifference(moving_plane, stable_plane)
-                    
-                    if distance <= self.connection_tolerance and angle_diff <= self.angle_tolerance:
-                        logger.debug(f'Auto-adjusting connection (distance: {distance:.2f}, angle: {angle_diff:.2f}°)')
+
+                    if (
+                        distance <= self.connection_tolerance
+                        and angle_diff <= self.angle_tolerance
+                    ):
+                        logger.debug(
+                            f"Auto-adjusting connection (distance: {distance:.2f}, angle: {angle_diff:.2f}°)"
+                        )
                         self.handleCollision(entry)
                         entries.remove(entry)
                         break
                     else:
                         if distance < 0.1 and angle_diff < 0.1:
-                            logger.debug('Exact collision detected')
+                            logger.debug("Exact collision detected")
                             self.handleCollision(entry)
                             entries.remove(entry)
                             break
                         else:
-                            logger.debug(f'Collision detected but not within snapping thresholds (distance: {distance:.2f}, angle: {angle_diff:.2f}°)')
+                            logger.debug(
+                                f"Collision detected but not within snapping thresholds (distance: {distance:.2f}, angle: {angle_diff:.2f}°)"
+                            )
                 else:
-                    logger.debug('Collision detected but could not determine planes for entry: %s', entry)
+                    logger.debug(
+                        "Collision detected but could not determine planes for entry: %s",
+                        entry,
+                    )
             else:
-                logger.debug('Collision detected between active tracks, skipping snapping: %s and %s', entry.getFromNodePath(), entry.getIntoNodePath())
-            
+                logger.debug(
+                    "Collision detected between active tracks, skipping snapping: %s and %s",
+                    entry.getFromNodePath(),
+                    entry.getIntoNodePath(),
+                )
+
         self.window.trackHandler.clearEntries()
 
     def getAngleDifference(self, moving_plane, stable_plane):
@@ -342,18 +420,18 @@ class SelectionControl(DirectObject.DirectObject):
         moving_h = moving_plane.getH(self.window.table.nodepath)
         stable_h = stable_plane.getH(self.window.table.nodepath)
         diff = stable_h - moving_h
-        
+
         while diff > 180:
             diff -= 360
         while diff < -180:
             diff += 360
-            
+
         angle_error = abs(abs(diff) - 180)
         return angle_error
 
     def handleCollision(self, entry):
         """Process a collision entry and align tracks"""
-        logger.debug('Handling collision for entry: %s', entry)
+        logger.debug("Handling collision for entry: %s", entry)
         moving_plane, stable_plane = self.getCollisionPlanes(entry)
         if moving_plane is None or stable_plane is None:
             logger.debug("Could not determine collision planes for entry: %s", entry)
@@ -363,7 +441,9 @@ class SelectionControl(DirectObject.DirectObject):
             moving_plane if moving_plane.getName().startswith("male") else stable_plane
         )
         female_plane = (
-            moving_plane if moving_plane.getName().startswith("female") else stable_plane
+            moving_plane
+            if moving_plane.getName().startswith("female")
+            else stable_plane
         )
         logger.debug("Aligning connection between: %s and %s", male_plane, female_plane)
         logger.debug("checking connected %s", self.window.connections)
@@ -375,35 +455,35 @@ class SelectionControl(DirectObject.DirectObject):
         from_track = self.findTrackByNodePath(from_sphere.getParent())
         into_sphere = entry.getIntoNodePath()
         into_track = self.findTrackByNodePath(into_sphere.getParent())
-        
+
         male_sphere = (
-            from_sphere if from_sphere.getName().startswith("male") 
-            else into_sphere if into_sphere.getName().startswith("male") 
-            else None
+            from_sphere
+            if from_sphere.getName().startswith("male")
+            else into_sphere if into_sphere.getName().startswith("male") else None
         )
         female_sphere = (
-            into_sphere if into_sphere.getName().startswith("female") 
-            else from_sphere if from_sphere.getName().startswith("female") 
-            else None
+            into_sphere
+            if into_sphere.getName().startswith("female")
+            else from_sphere if from_sphere.getName().startswith("female") else None
         )
         if male_sphere is None or female_sphere is None:
             return None, None
-        
+
         moving_track = (
-            from_track if from_track in list(self.active_tracks) 
-            else into_track if into_track in list(self.active_tracks) 
-            else None
+            from_track
+            if from_track in list(self.active_tracks)
+            else into_track if into_track in list(self.active_tracks) else None
         )
         stable_track = from_track if moving_track == into_track else into_track
         moving_sphere = male_sphere if moving_track == from_track else female_sphere
         stable_sphere = female_sphere if moving_sphere == male_sphere else male_sphere
-        
+
         if moving_track is None or stable_track is None:
             return None, None
-        
+
         moving_plane = None
         stable_plane = None
-        
+
         for plane in moving_track.planes:
             if moving_sphere.getBounds().contains(plane.getPos()):
                 moving_plane = plane
@@ -413,7 +493,7 @@ class SelectionControl(DirectObject.DirectObject):
             if stable_sphere.getBounds().contains(plane.getPos()):
                 stable_plane = plane
                 break
-    
+
         return moving_plane, stable_plane
 
     def alignConnection(self, moving_plane, stable_plane):
@@ -432,31 +512,31 @@ class SelectionControl(DirectObject.DirectObject):
 
         current_hpr = moving_track.nodepath.getHpr()
         self.rbc_nodepath.setH(self.rbc_nodepath.getH() + heading_diff - 180)
-        
+
         moving_plane_pos = moving_plane.getPos(self.window.table.nodepath)
         stable_plane_pos = stable_plane.getPos(self.window.table.nodepath)
         plane_offset = stable_plane_pos - moving_plane_pos
         logger.debug("Plane offset: %s", plane_offset)
-        
+
         track_pos = moving_track.nodepath.getPos(self.window.table.nodepath)
         new_x = track_pos.getX() + plane_offset.getX()
         new_y = track_pos.getY() + plane_offset.getY()
         new_z = track_pos.getZ() + plane_offset.getZ()
         new_pos = Vec3(new_x, new_y, new_z)
-        
+
         rbc_offset = self.rbc_nodepath.getPos(self.window.table.nodepath) - track_pos
         self.rbc_nodepath.setPos(self.window.table.nodepath, new_pos + rbc_offset)
 
     def makeCombinedNode(self):
         """Create a combined node for all selected tracks"""
         logger.debug("Creating combined node for selected tracks...")
-        
+
         self.dissolveCombinedNode()
         self.rbc = RigidBodyCombiner("combined")
         self.rbc_subnodepath = NodePath(self.rbc)
         minpoint, maxpoint = None, None
         is_new = False
-        
+
         for track in list(self.active_tracks):
             track.nodepath.wrtReparentTo(self.rbc_subnodepath)
             if track.nodepath.getTightBounds() is not None:
@@ -464,17 +544,17 @@ class SelectionControl(DirectObject.DirectObject):
                     minpoint = track.nodepath.getTightBounds()[0]
                 if maxpoint is None or maxpoint < track.nodepath.getTightBounds()[1]:
                     maxpoint = track.nodepath.getTightBounds()[1]
-                    
+
         logger.debug("Collecting combined node geometry...")
         self.rbc.collect()
-        
+
         if minpoint is None or maxpoint is None:
             minpoint = Vec3(0, 0, 0)
             maxpoint = Vec3(0, 0, 0)
-            
+
         center_offset = self.rbc_subnodepath.getPos() - ((minpoint + maxpoint) / 2)
         logger.debug("Center offset for combined node: %s", center_offset)
-        
+
         self.rbc_nodepath = self.window.table.nodepath.attachNewNode("rbc_nodepath")
         self.rbc_subnodepath.reparentTo(self.rbc_nodepath)
         self.rbc_subnodepath.setPos(center_offset)
@@ -489,13 +569,11 @@ class SelectionControl(DirectObject.DirectObject):
             diff = delta / numframes
             logger.debug(f"Animating frame {framenum}/{numframes} with diff {diff:.4f}")
             self.window.task_mgr.doMethodLater(
-                self.window.dt * framenum, 
-                lambda task: func(diff, False), 
-                "animateTask"
+                self.window.dt * framenum, lambda task: func(diff, False), "animateTask"
             )
         if message:
             self.window.messenger.send("state change")
-        
+
     def flipTrack(self, amount=180, message=True):
         """Flip the selected tracks"""
         if self.selection:
@@ -528,8 +606,8 @@ class SelectionControl(DirectObject.DirectObject):
         """Raise or lower the selected tracks"""
         if self.selection:
             if (
-                self.selection.getZ() + amount < 1000 and 
-                self.selection.getZ() + amount >= 0
+                self.selection.getZ() + amount < 1000
+                and self.selection.getZ() + amount >= 0
             ):
                 self.selection.setZ(self.selection.getZ() + amount)
                 if message:
