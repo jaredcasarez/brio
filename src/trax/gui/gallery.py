@@ -79,21 +79,6 @@ class TrackGallery:
         self.window.taskMgr.add(self.spinTrack, "spinTrackTask")
         self._preloadTracks()
         self._updateThumbnails()
-    
-    def _preloadTracks(self):
-        """Preload track models for smoother browsing"""
-        self.preloaded_models = {}
-        for cat, files in self.track_files.items():
-            self.preloaded_models[cat] = []
-            for file in files:
-                model = self.window.loader.loadModel(
-                    file, 
-                    callback=lambda model, cat=cat: self._preloadCallback(model, cat)
-                )
-                
-    def _preloadCallback(self, model, cat=None):
-        model.setShaderAuto()
-        self.preloaded_models[cat].append(model)
         
     def _createFeaturedPreview(self):
         """Create the main preview area with spinning track"""

@@ -191,8 +191,10 @@ class Assets:
         return files
     
     @classmethod
-    def get_all_track_files(cls) -> dict[str, list[str]]:
+    def get_all_track_files(cls, ignore_mode=False) -> dict[str, list[str]]:
         """Get dictionary of category -> list of model files for current mode"""
+        if ignore_mode:
+            return {mode: {cat: cls.get_category_models(cat) for cat in _MODE_CONFIG[mode]['categories']} for mode in _MODE_CONFIG.keys()}
         return {cat: cls.get_category_models(cat) for cat in cls.get_track_categories()}
 
     

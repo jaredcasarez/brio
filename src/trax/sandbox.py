@@ -85,6 +85,7 @@ class SandboxApp(ShowBase):
         # Set warm background color
         self.setBackgroundColor(self.backgroundColor)
         
+        self._preloadTracks()
         self.current_projectfile = None
         
         # Load textures using Assets paths
@@ -174,6 +175,23 @@ class SandboxApp(ShowBase):
         self.camera.lookAt(0, 0, 0)
         self.camera_controller = CameraControl(self, self.camera)
         self.units = []
+
+    def _preloadTracks(self):
+        """Preload track models for smoother browsing"""
+        files=Assets.get_all_track_files(ignore_mode=True)
+        self.preloaded_models = {mode:{cat: [] for cat in files[mode]} for mode in files}
+        for mode in files:
+            for cat in files[mode]:
+                for file in files[mode][cat]:
+                    self.loader.loadModel(
+                        file, 
+                        callback=lambda model, cat=cat, mode=mode: self._preloadCallback(model, cat, mode)
+                    )
+                
+    def _preloadCallback(self, model, cat, mode):
+        model.setShaderAuto()
+        structure = list(self.preloaded_models.keys()), list(self.preloaded_models[mode].keys())
+        self.preloaded_models[mode][cat].append(model)
 
     def toggleMode(self):
         """Toggle between 'brio' and 'citystreets' modes"""
