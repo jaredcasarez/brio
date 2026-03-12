@@ -87,7 +87,6 @@ class CameraControl(DirectObject.DirectObject):
             logger.info("Directional lights turned on")
 
     def handleWASD(self, key):
-        print('handling wasd', key)
         if key in self.command_lookup:
             self.window.taskMgr.add(self.moveTask, extraArgs=[key], appendTask=True)
     

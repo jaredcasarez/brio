@@ -23,7 +23,6 @@ class StateManager(DirectObject.DirectObject):
     def onKeypress(self, key):
         if self.window.mouseWatcherNode.is_button_down('control') or self.window.mouseWatcherNode.is_button_down('meta'):
             key=f"control_{key}"
-        print(key)
         if key in self.command_lookup:
             self.command_lookup[key]()
 
