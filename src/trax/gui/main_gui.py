@@ -5,7 +5,7 @@ Main GUI controller
 from direct.gui.DirectGui import (
     DirectFrame, DirectButton, DirectLabel, DGG
 )
-from panda3d.core import TextNode
+from panda3d.core import TextNode, Vec3
 
 from ..utils import todecimal, rgba
 from ..constants import Colors
@@ -117,6 +117,34 @@ class GUI:
             )
             btn.setTransparency(True)
             self.toolbar_buttons.append((btn_bg, btn, tooltip))
+            self.toolbar_buttons[-1][1].bind(DGG.ENTER, lambda x, t=tooltip, rel_pos= (0,0,-0.025),relative=self.toolbar_buttons[-1][1], parent=self.sidebar: self._showTooltip(t, -1, relative, parent, rel_pos=rel_pos, text_bg=Colors.panelColor, text_frame=Colors.panelBorderColor, text_scale=0.7))
+            self.toolbar_buttons[-1][1].bind(DGG.EXIT, lambda x: self._hideTooltip())
+        
+    def _showTooltip(self, frametext, updown, relative, parent, rel_pos=(0,0,0), ww=None, **kwargs):
+        """Display a tooltip above the toolbar button"""
+        if hasattr(self, 'tooltip_label'):
+            self.tooltip_label.destroy()
+        self.tooltip_label = DirectLabel(
+            parent=parent,
+            text=frametext,
+            text_font=self.window.font,
+            text_scale=kwargs.pop('text_scale', 0.025),
+            text_fg=Colors.textColor,
+            text_align=TextNode.ACenter,
+            frameColor=Colors.panelBorderColor,
+            pad=(0.005,0.005),
+            relief=DGG.FLAT,
+            text_wordwrap=ww if ww is not None else len(frametext),
+            **kwargs
+        )
+        z = updown*self.tooltip_label.getHeight()
+        self.tooltip_label.setPos(relative, (0,0,0))
+        self.tooltip_label.setPos(self.tooltip_label, Vec3(0,0,z)+Vec3(rel_pos))
+        self.tooltip_label.setTransparency(True)
+    def _hideTooltip(self):
+        """Hide the tooltip"""
+        if hasattr(self, 'tooltip_label'):
+            self.tooltip_label.destroy()
     
     def _createCategoryTabs(self):
         """Create colorful category tab buttons"""
@@ -195,18 +223,30 @@ class GUI:
             text_scale=0.028,
             text_fg=todecimal(rgba(180, 180, 180, 1)),
             text_align=TextNode.ACenter,
-            pos=(-0.5, 0, 0.02),
+            pos=(-1, 0, 0.02),
             frameColor=todecimal(rgba(0, 0, 0, 0)),
         )
+        self.control_labels=[]
+        control_list = {"[Enter] Place": 'Press enter to place previewed track at your cursor', "[Z] Drag": 'Press z to drag selected piece(s). Snap pieces to cursor with shift', "[Q/E] Rotate":'Rotate selected piece(s) in either direction. Hold shift for smaller increments', "[R/F] Raise/Lower": 'Raise and lower selected piece(s). Useful for elevated pieces', "[X] Flip": 'Flip selected piece(s). Only helpful with Brio tracks', "[Scroll] Zoom":'Zoom camera in towards the point of focus', "[Shift/Cmd+Scroll] Orbit": 'Scroll while holding down either command or shift to orbit up-down and left-right, respectively', "[WASD] Move":'Move point of focus of the camera anywhere within the table surface'}
+        control_width=0
+        for control, tip in list(control_list.items())[-1:0:-1]:
+            self.control_labels.append(DirectButton(
+                parent=self.window.a2dBottomRight,
+                text=control,
+                text_font=self.window.font,
+                text_scale=0.025,
+                text_fg=todecimal(rgba(140, 140, 140, 1)),
+                text_align=TextNode.ABoxedCenter,
+                frameColor=todecimal(rgba(0, 0, 0, 0)),
+                pad=(-0.1,-0.08),
+            ))
+            self.control_labels[-1].setPos(-0.5-control_width-self.control_labels[-1].getWidth()/2, 0, 0.02)
+            self.control_labels[-1].setTransparency(True)
+            control_width+=self.control_labels[-1].getWidth()+0.25
+            self.control_labels[-1].bind(DGG.ENTER, lambda x, t=tip, relative=self.control_labels[-1], ww=15, parent=self.window.aspect2d: self._showTooltip(t, 1,relative, parent, ww=ww,rel_pos=(0,0,0.0125), text_bg=Colors.panelColor, text_frame=Colors.panelBorderColor, text_scale=0.0325))
+            self.control_labels[-1].bind(DGG.EXIT, lambda x: self._hideTooltip())
+            
+
         
-        # Keyboard hints (right)
-        self.hints_label = DirectLabel(
-            parent=self.statusbar,
-            text="[Enter] Place    [Z] Drag    [Q/E] Rotate    [R/F] Raise/Lower    [X] Flip   [Shift] Modifier key  [(Shift/Cmd) Scroll] Move camera",
-            text_font=self.window.font,
-            text_scale=0.025,
-            text_fg=todecimal(rgba(140, 140, 140, 1)),
-            text_align=TextNode.ARight,
-            pos=(1.7, 0, 0.02),
-            frameColor=todecimal(rgba(0, 0, 0, 0)),
-        )
+        
+        
